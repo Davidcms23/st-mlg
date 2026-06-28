@@ -1,0 +1,52 @@
+---
+title: "Séries Temporais IPCA"
+author: "Messi"
+format: html
+editor: visual
+---
+
+```{r}
+#| message: false
+#| warning: false
+#| results: hide
+
+library(tsibble)
+library(dplyr)
+library(urca)
+library(rbcb)
+library(tseries)
+
+dados_ipca <- rbcb::get_series(
+  c(IPCA = 433), 
+  start_date = "2015-01-01"
+)
+
+serie_ipca <- dados_ipca |> 
+  mutate(MesAno = tsibble::yearmonth(date)) |> 
+  select(MesAno, IPCA) |>
+  as_tsibble(index = MesAno)
+```
+
+
+# Introdução
+
+Blablabla sobre IPCA, periodo,
+por que não desde o inicio,
+inflação,
+flutuação etc.
+
+# Metodologia 
+
+Escolha do modelo,
+testes,
+critérios usados
+
+# Resultados
+
+
+
+# Conclusão 
+
+
+
+# Referências
