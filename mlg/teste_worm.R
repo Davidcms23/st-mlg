@@ -24,4 +24,3 @@ gl_res <- df.residual(mod_cloglog)
 p_valor <- 1 - pchisq(dev_res, gl_res)
 
 tibble(Desvio=dev_res, gl = gl_res, "p-valor" = p_valor)
-
