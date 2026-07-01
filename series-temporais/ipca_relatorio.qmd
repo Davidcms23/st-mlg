@@ -30,20 +30,15 @@ serie_ipca <- dados_ipca |>
 
 # Introdução
 
-Blablabla sobre IPCA, periodo,
-por que não desde o inicio,
-inflação,
-flutuação etc.
-
 # Metodologia 
 
-Escolha do modelo,
-testes,
-critérios usados
+## Ajuste
+
+## Análise de resíduos
+
+## Previsão
 
 # Resultados
-
-
 
 # Conclusão 
 
