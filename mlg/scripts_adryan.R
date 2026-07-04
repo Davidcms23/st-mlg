@@ -1,5 +1,7 @@
 # Bibliotecas ---------------------------------------------------------------
 
+rm(list = ls()); gc(full = TRUE)
+
 library(tidyverse)
 library(faraway)
 library(MASS)
@@ -58,6 +60,7 @@ mod_glm_dummy <- glm(cbind(sucessos, fracassos) ~ is_control + log_dose_active,
 AIC(mod_cloglog, modelo_logit1, modelo_logit2, mod_logit, mod_glm_dummy)
 
 # Selecionar mod_cloglog, modelo_logit2 e mod_glm_dummy
+rm(modelo_logit1, mod_logit)
 # Comparar o deviance
 
 deviance(mod_cloglog)
@@ -81,59 +84,6 @@ performance::rmse(mod_cloglog)
 performance::rmse(modelo_logit2)
 performance::rmse(mod_glm_dummy)
 
-# Seleciona o 
-
-# Substitua pelo nome do seu modelo preferido
-dev_residual <- deviance(mod_glm_dummy)
-graus_liberdade <- summary(mod_glm_dummy)$df.residual
-
-# Calcular o p-valor do teste
-p_valor_ajuste <- pchisq(dev_residual, graus_liberdade, lower.tail = FALSE)
-cat("P-valor da Bondade de Ajuste:", p_valor_ajuste, "\n")
-
-dev_residual <- summary(modelo_logit2)$deviance
-graus_liberdade <- summary(modelo_logit2)$df.residual
-
-p_valor_ajuste <- pchisq(dev_residual, graus_liberdade, lower.tail = FALSE)
-cat("P-valor da Bondade de Ajuste:", p_valor_ajuste, "\n")
-
-dev_residual <- summary(mod_logit)$deviance
-graus_liberdade <- summary(mod_logit)$df.residual
-
-p_valor_ajuste <- pchisq(dev_residual, graus_liberdade, lower.tail = FALSE)
-cat("P-valor da Bondade de Ajuste:", p_valor_ajuste, "\n")
-
-# Cálculo manual do R2 de McFadden
-r2_mcfadden <- 1 - (summary(mod_glm_dummy)$deviance / summary(mod_glm_dummy)$null.deviance)
-cat("Pseudo-R2 de McFadden:", r2_mcfadden, "\n")
-
-r2_mcfadden <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
-cat("Pseudo-R2 de McFadden:", r2_mcfadden, "\n")
-
-# Simular resíduos
-residuos_simulados <- simulateResiduals(fittedModel = mod_glm_dummy)
-
-# Plotar diagnósticos
-plot(residuos_simulados)
-
-residuos_simulados <- simulateResiduals(fittedModel = modelo_logit2)
-
-plot(residuos_simulados)
-
-summary(mod_glm_dummy)
-summary(modelo_logit2)
-
-coefficients(mod_glm_dummy, exponentiate = TRUE)
-
-check_model(mod_glm_dummy)
-
-performance::check_overdispersion(mod_glm_dummy)
-
-check_model(modelo_logit2)
-
-model_performance(mod_glm_dummy)
-model_performance(modelo_logit2)
-
 # Métricas DE50 e DL50
 
 ## Mod_cloglog
@@ -148,7 +98,7 @@ ic_inf_cloglog <- de50_cloglog - 1.96 * se_cloglog
 ic_sup_cloglog <- de50_cloglog + 1.96 * se_cloglog
 
 # Exibir resultados
-cat("DE50 (cloglog):", de50_cloglog, "[95% IC:", ic_inf_cloglog, ";", ic_sup_cloglog, "]\n")
+cat("DE50 (cloglog):", de50_cloglog, "[95% IC:", ic_inf_cloglog, ";", ic_sup_cloglog, "]\n") # Dá negativo, já remove
 
 ## modelo_logit2
 
@@ -167,7 +117,7 @@ ic_inf_logit2 <- exp(ic_inf_log2) - 0.1
 ic_sup_logit2 <- exp(ic_sup_log2) - 0.1
 
 # Exibir resultados
-cat("DE50 (logit2):", de50_logit2, "[95% IC:", ic_inf_logit2, ";", ic_sup_logit2, "]\n")
+cat("DE50 (logit2):", de50_logit2, "[95% IC:", ic_inf_logit2, ";", ic_sup_logit2, "]\n") # Dá tudo certo, positivo
 
 ## mod_glm_dummy
 
@@ -187,4 +137,40 @@ ic_inf_dummy <- exp(ic_inf_log_d)
 ic_sup_dummy <- exp(ic_sup_log_d)
 
 # Exibir resultados
-cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n")
+cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n") # Dá tudo certo, positivo
+
+# Selecionar apenas mod_glm_dummy
+# Qualidade do ajuste
+
+dev_residual <- deviance(mod_glm_dummy)
+graus_liberdade <- summary(mod_glm_dummy)$df.residual
+
+# Calcular o p-valor do teste
+p_valor_ajuste <- pchisq(dev_residual, graus_liberdade, lower.tail = FALSE)
+cat("P-valor da Bondade de Ajuste (Desvio):", p_valor_ajuste, "\n")
+
+# Análise de resíduos
+
+# Simular resíduos
+residuos_simulados <- simulateResiduals(fittedModel = mod_glm_dummy)
+
+# Plotar diagnósticos
+plot(residuos_simulados)
+
+check_model(mod_glm_dummy)
+
+performance::check_overdispersion(mod_glm_dummy)
+
+# Testes específicos
+
+# 1. Teste de Wald para os Coeficientes Individuais
+summary(mod_glm_dummy)
+
+# 2. Análise de Desviação
+anova(mod_glm_dummy, test = "Chisq")
+
+# 5. Coeficientes e valores
+
+coefficients(mod_glm_dummy, exponentiate = T)
+
+cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n") # Dá tudo certo, positivo
