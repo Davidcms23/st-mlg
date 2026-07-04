@@ -67,16 +67,26 @@ deviance(mod_cloglog)
 deviance(modelo_logit2)
 deviance(mod_glm_dummy)
 
+data.frame(
+  Modelo = c("mod_cloglog", "modelo_logit2", "mod_glm_dummy"),
+  Deviance = c(deviance(mod_cloglog), deviance(modelo_logit2), deviance(mod_glm_dummy))
+)
+
 # Comparar o pseudo-r2
 
-r2_mcfadden <- 1 - (summary(mod_cloglog)$deviance / summary(mod_glm_dummy)$null.deviance)
+r2_mcfadden_cloglog <- 1 - (summary(mod_cloglog)$deviance / summary(mod_glm_dummy)$null.deviance)
 cat("Pseudo-R2 de McFadden:", r2_mcfadden, "\n")
 
-r2_mcfadden <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
+r2_mcfadden_logit2 <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
 cat("Pseudo-R2 de McFadden:", r2_mcfadden, "\n")
 
-r2_mcfadden <- 1 - (summary(mod_glm_dummy)$deviance / summary(modelo_logit2)$null.deviance)
+r2_mcfadden_glm_dummy <- 1 - (summary(mod_glm_dummy)$deviance / summary(modelo_logit2)$null.deviance)
 cat("Pseudo-R2 de McFadden:", r2_mcfadden, "\n")
+
+data.frame(
+  Modelo = c("mod_cloglog", "modelo_logit2", "mod_glm_dummy"),
+  `R2 de McFadden` = c(r2_mcfadden_cloglog, r2_mcfadden_logit2, r2_mcfadden_glm_dummy)
+)
 
 # Comparar o RMSE
 
@@ -84,7 +94,12 @@ performance::rmse(mod_cloglog)
 performance::rmse(modelo_logit2)
 performance::rmse(mod_glm_dummy)
 
-# Métricas DE50 e DL50
+data.frame(
+  Modelo = c("mod_cloglog", "modelo_logit2", "mod_glm_dummy"),
+  RMSE = c(performance::rmse(mod_cloglog), performance::rmse(modelo_logit2), performance::rmse(mod_glm_dummy))
+)
+
+# Métrica DE50
 
 ## Mod_cloglog
 
