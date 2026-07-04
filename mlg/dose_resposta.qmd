@@ -1,7 +1,11 @@
 ---
 title: "Modelo de Dose-Resposta"
 author: "Adryãn e Christian"
-format: html
+format:
+  html:
+    number-sections: true
+  pdf:
+    number-sections: true
 editor: visual
 ---
 
@@ -13,6 +17,11 @@ editor: visual
 library(tidyverse)
 library(MASS)
 library(faraway)
+library(drc)
+library(ggplot2)
+library(dplyr)
+
+data(earthworms)
 
 ```
 
@@ -28,13 +37,77 @@ Este trabalho utiliza o conjunto de dados empíricos `earthworms`, disponibiliza
 
 ## Justificativa
 
+Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou não), mas os dados disponíveis registram a proporção desse comportamento por amostra (o número de indivpiduos que permaneceram no solo contaminado em relação ao total exposto a cada dose), trata-se de uma variável resposta de dados agrupados. Essa estrutura empírica motiva a aplicação da teoria de MLG sob a suposição de uma distribuição binomial, oque permite modelar adequadamente a probabilidade de um indivíduo permanecer no recipiente contaminado em função da dose recebida.
+
 # Metodologia
 
 **Detalhamento do tamanho amostral, definição clara da variável resposta e preditores, além da formulação matemática do modelo (função de ligação e componente de variância).**
 
+A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de microcas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, $Y_i \sim Binomial(n_i, p_i)$. A proporção média esperada é $E(Y_i/n_i) = p_i$, assumindo a componente de variância teórica $Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}$.
+
+Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustadas e comparadas três funções de ligação para dados binomiais:
+
+ - **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$ 
+ - **Probito**: $\eta_i = \Phi^1_{(p_i)}$
+ - **Compementro Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
+
+Em relação aos preditores, a componente sistemática exige atenção especial à dose zero (grupo controle). Como log(0) é matematicamente indefinido e o comportamento natural sem toxina resulta em uma divisão aproximada de metade das minhocas entre os recipientes, não é apropriado ajustar uma regressão ondinária usando apenas log(*dose*). Para contornar isso os preditores foram formulados em segmentos (*piewise*) com variáveis indicadoras (*dummy*), isolando o efeito do controle das doses ativas:
+
+$$ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})$$
+
+A estimação dos parâmetros será feita pelo método da Máxima Verossimilhança. O melhor modelo será selecionado com base no menor Críterio de Informação de Akaike (AIC). Para o diagnóstico do ajuste, aplicaremos o Teste Qui-Quadrado no Desvio Residual e a inspeção gráfica de pressupostos utilizando resíduos quantílicos randomizados.
+
 # Análise Descritiva
 
 **Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.**
+
+```{r}
+ggplot(earthworms, aes(x = dose, y = number/total)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Proporção de Minhocas Retidas vs Dose da Substância Tóxica",
+    x = "Dose",
+    y = "Proporção Empírica (Ficaram/Total)"
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red")
+
+```
+
+Na gráfico podemos observar que na dose zero (controle) cerca da metadade das minhocas naturalmente permanece no recipinete. A queda abrupta com o aumento da dose comprava que uma simples transoformação logarístmica direta da covariável é inadequada, reforçando a necessidade de isolar o grupo controle na modelagem.
+
+```{r}
+earthworms |> 
+  filter(dose > 0) |> 
+  ggplot(aes(x = log(dose), y = number/total)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") + 
+  theme_minimal() +
+  labs(
+    title = "Proporção de Retenção vs Logaritmo da Dose Ativa",
+    x = "Log(Dose) (Excluindo o Controle)",
+    y = "Proporção Empírica"
+  )
+```
+
+Excluindo-se o controle e plotando a resposta contra o logaritmo das doses ativas, observamos uma forma sigmoide descrescente. Esse padrão justifica o uso do logaritmo da dose como variável explicativa para as doses ativas.
+
+```{r}
+earthworms |> 
+  filter(dose > 0) |> 
+  mutate(elogit = log((number + 0.5) / (total - number + 0.5))) %>%
+  ggplot(aes(x = log(dose), y = elogit)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  theme_minimal() +
+  labs(
+    title = "Logitos Empíricos vs Log(Dose)",
+    x = "Log(Dose) (Excluindo o Controle)",
+    y = "Logito Empírico"
+  )
+```
+
+O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notável tendência linear. A obtenção dessa linearidade é o diagnóstico visual perfeito de que a função de ligação logistica (Logito) está corretamente especificada para a componente sistemática do modelo.
 
 # Ajuste e Diagnóstico do Modelo
 
