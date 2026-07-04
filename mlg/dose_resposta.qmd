@@ -47,9 +47,9 @@ A amostra do estudo consiste em 35 observações empíricas. A variável respost
 
 Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustadas e comparadas três funções de ligação para dados binomiais:
 
- - **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$ 
- - **Probito**: $\eta_i = \Phi^1_{(p_i)}$
- - **Compementro Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
+- **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$
+- **Probito**: $\eta_i = \Phi^1_{(p_i)}$
+- **Compementro Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
 
 Em relação aos preditores, a componente sistemática exige atenção especial à dose zero (grupo controle). Como log(0) é matematicamente indefinido e o comportamento natural sem toxina resulta em uma divisão aproximada de metade das minhocas entre os recipientes, não é apropriado ajustar uma regressão ondinária usando apenas log(*dose*). Para contornar isso os preditores foram formulados em segmentos (*piewise*) com variáveis indicadoras (*dummy*), isolando o efeito do controle das doses ativas:
 
@@ -116,4 +116,3 @@ O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notá
 # Interpretação Estatística e Conclusão
 
 **Leitura interpretativa dos coeficientes na escala prática do problema (razões de taxas, percentuais, curvas de resposta) e considerações finais sobre o fenômeno estudado.**
-
