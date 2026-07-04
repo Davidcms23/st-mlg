@@ -18,12 +18,29 @@ library(faraway)
 
 # Introdução
 
-## Sobre o conjunto de dados
+**Contextualização do problema, descrição da origem do conjunto de dados escolhido e a justificativa teórica inicial para a aplicação do modelo designado.**
+
+A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as microcas, quando expostas a solos contaminados.
+
+## Descrição e Origem do Conjunto de Dados
+
+Este trabalho utiliza o conjunto de dados empíricos `earthworms`, disponibilizado no pacote `drc` do ambiente computacional R. Os dados originalmente fornecidos por **Nina Cedergree** (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.
+
+## Justificativa
 
 # Metodologia
 
+**Detalhamento do tamanho amostral, definição clara da variável resposta e preditores, além da formulação matemática do modelo (função de ligação e componente de variância).**
+
 # Análise Descritiva
+
+**Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.**
 
 # Ajuste e Diagnóstico do Modelo
 
-# Resultado
+**Apresentação das estimativas, avaliação de qualidade global do ajuste, análise de resíduos (homocedasticidade, pontos influentes) e testes específicos para cada modelo.**
+
+# Interpretação Estatística e Conclusão
+
+**Leitura interpretativa dos coeficientes na escala prática do problema (razões de taxas, percentuais, curvas de resposta) e considerações finais sobre o fenômeno estudado.**
+
