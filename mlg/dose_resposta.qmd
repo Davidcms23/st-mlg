@@ -7,6 +7,8 @@ format:
   pdf:
     number-sections: true
 editor: visual
+execute:
+  cache: true
 ---
 
 ```{r}
@@ -20,8 +22,12 @@ library(faraway)
 library(drc)
 library(ggplot2)
 library(dplyr)
+library(DHARMa)
+library(easystats)
+library(knitr)
 
 data(earthworms)
+dados <- earthworms
 
 ```
 
@@ -112,6 +118,125 @@ O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notá
 # Ajuste e Diagnóstico do Modelo
 
 **Apresentação das estimativas, avaliação de qualidade global do ajuste, análise de resíduos (homocedasticidade, pontos influentes) e testes específicos para cada modelo.**
+
+Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-$R^2$ de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica DE50.
+
+Inicialmente, iremos ajustar os seguintes cinco modelos.
+
+```{r}
+mod_cloglog <- glm(cbind(number, total - number) ~ dose,
+                   family = binomial(link = "cloglog"), data = earthworms)
+
+modelo_logit1 <- glm(cbind(number, total - number) ~ log(dose + 1), data = earthworms, family = binomial(link = "logit"))
+
+
+modelo_logit2 <- glm(cbind(number, total - number) ~ log(dose + 0.1), data = earthworms, family = binomial(link = "logit"))
+
+mod_logit <- glm(cbind(number, total - number) ~ dose,
+                 family = binomial(link = "logit"), data = earthworms)
+dados$controle <- ifelse(dados$dose == 0, 1, 0)
+dados$log_dose <- ifelse(dados$dose > 0, log(dados$dose), 0) 
+
+mod_glm_dummy <- glm(cbind(number, total - number) ~ controle + log_dose, 
+                     data = dados, 
+                     family = binomial(link = "logit"))
+```
+
+Que são, respectivamente:
+
+-  Modelo Linear Generalizado Binomial com Ligação Complemento Log-Log;
+
+- Modelo Linear Generalizado Binomial com Ligação Logito e variável resposta modificada (log + 1);
+
+- Modelo Linear Generalizado Binomial com Ligação Logito e variável resposta modificada (log + 0.1);
+
+- Modelo Linear Generalizado Binomial com Ligação Logito padrão;
+
+- Modelo Linear Generalizado Binomial com Ligação Logito e variáveis resposta modificadas (adição de variável e modificação);
+
+As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnetudes (escala logarítmica).
+
+Portanto, se for usado a dose normalmente, o modelo vai dar um peso maior para as doses mais altas, ignorando o que acontece nas doses mais baixas. O log resolve isso espalhando as doses menores e aproximando as maiores, sendo o ideal para o ajuste logistico.
+
+Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o `log(dose + 1)` e então para minimizar a contribuição da constante foi-se usado o `log(dose + 0.1)`, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a DE50.
+
+Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável *"dummy",* isto é, a variável indica se o valor da dose é zero, se for, não aplica o logarítimo, se não for, aplica o logarítimo, ao mesmo tempo evitando que seja feito `log(0)` e aplicando o logarítimo importante para o modelo.
+
+Com os modelos definidos, podemos seguir para a comparação e seleção deles.
+
+## Comparação dos modelos
+
+Iremos utilizar 4 critérios para selecionar o modelo ideal:\
+
+- Critério de Informação de Akaike (AIC): quanto menor, melhor;
+
+- Desvio (Deviance): quanto menor, melhor;
+
+- Pseudo-$R^2$ de McFadden: quanto maior, melhor;
+
+- Raiz do Erro Quadrático Médio (RMSE): quanto menor, melhor.
+
+Além destes, há também uma métrica que pode servir como critério, sendo ele a dose efetiva mediana (DE50), neste, iremos observar se o valor é condizente com o contexto, nesse caso, qualquer modelo que apresentar em seu intervalo de confiança valores negativos pode ser considerado inconsistente e descartado, a incosistência vem de que não existe dose negativa, portanto valores negativos de dose efetiva mediana são inconsistentes.
+
+Com isso definido, iniciaremos pela comparação dos AICs:
+
+```{r}
+AIC(mod_cloglog, modelo_logit1, modelo_logit2, mod_logit, mod_glm_dummy)
+```
+
+Para o AIC percebe-se que o modelo logito padrão, complemento log-log e o modelo logito deslocado à 1 unidade apresentam os maiores AICs, o que não é ideal, já aqui pode-se descartar os modelos logito padrão e logito deslocado à 1 unidade, o modelo complemento log-log apesar de apresentar um AIC alto comparado aos outros não será descartado a fins de comparação de ligações posteriores.
+
+```{r}
+df_deviance <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  Desvio = c(deviance(mod_cloglog), deviance(modelo_logit2), deviance(mod_glm_dummy)))
+
+kableExtra::kable(df_deviance, 
+      booktabs = TRUE, 
+      digits = 4,
+      col.names = c("Modelo", "Desvio Residual"),
+      caption = "Comparação da Desvio Residual entre os modelos")
+```
+
+Para a comparação dos desvios dos modelos restantes percebe-se novamente que o modelo complemento log-log apresenta as piores métricas, tendo o maior desvio com uma diferença considerável, enquanto os modelos logito restantes tem uma diferença mínima entre eles.
+
+```{r}
+
+r2_mcfadden_cloglog <- 1 - (summary(mod_cloglog)$deviance / summary(mod_glm_dummy)$null.deviance)
+
+r2_mcfadden_logit2 <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
+
+r2_mcfadden_glm_dummy <- 1 - (summary(mod_glm_dummy)$deviance / summary(modelo_logit2)$null.deviance)
+
+df_r2 <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  `R2 de McFadden` = c(r2_mcfadden_cloglog, r2_mcfadden_logit2, r2_mcfadden_glm_dummy),
+  check.names = FALSE
+)
+
+kable(df_r2, 
+      booktabs = TRUE, 
+      digits = 4,
+      caption = "Pseudo-R2 de McFadden para cada modelo ajustado")
+```
+
+No pseudo-$R^2$ temos mais uma vez uma diferença grande entre o complemento log-log e os logitos, enquanto os logitos, entre si, tem uma diferença marginal. Além disso, no geral podemos afirmar que para qualquer um dos modelos, temos valores ótimos de R², evidenciando a qualidade dos modelos.
+
+```{r}
+
+df_rmse <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  RMSE = c(performance::rmse(mod_cloglog), performance::rmse(modelo_logit2), performance::rmse(mod_glm_dummy))
+)
+
+kable(df_rmse, 
+      booktabs = TRUE, 
+      digits = 4,
+      col.names = c("Modelo", "RMSE"),
+      caption = "Raiz do Erro Quadrático Médio (RMSE) dos modelos")
+```
+
+Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos boas Raízes, mantendo seus valores bem baixos.
 
 # Interpretação Estatística e Conclusão
 
