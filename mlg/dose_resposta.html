@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.9.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Adryãn e Christian">
+<meta name="author" content="Adryãn Lucas Santos">
+<meta name="author" content="Christian David Martins Souza">
 
 <title>Modelo de Dose-Resposta</title>
 <style>
@@ -69,10 +70,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="dose_resposta_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="dose_resposta_files/libs/quarto-html/anchor.min.js"></script>
 <link href="dose_resposta_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="dose_resposta_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="dose_resposta_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="dose_resposta_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="dose_resposta_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="dose_resposta_files/libs/bootstrap/bootstrap-e57257588d09ab5f4982da33b9c114cd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="dose_resposta_files/libs/bootstrap/bootstrap-121c658843653833201efd19df2186e2.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -110,25 +111,75 @@ window.Quarto = {
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="dose_resposta.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Sumário</h2>
+   
+  <ul>
+  <li><a href="#introdução" id="toc-introdução" class="nav-link active" data-scroll-target="#introdução"><span class="header-section-number">1</span> Introdução</a>
+  <ul class="collapse">
+  <li><a href="#descrição-e-origem-do-conjunto-de-dados" id="toc-descrição-e-origem-do-conjunto-de-dados" class="nav-link" data-scroll-target="#descrição-e-origem-do-conjunto-de-dados"><span class="header-section-number">1.1</span> Descrição e Origem do Conjunto de Dados</a></li>
+  <li><a href="#justificativa" id="toc-justificativa" class="nav-link" data-scroll-target="#justificativa"><span class="header-section-number">1.2</span> Justificativa</a></li>
+  </ul></li>
+  <li><a href="#metodologia" id="toc-metodologia" class="nav-link" data-scroll-target="#metodologia"><span class="header-section-number">2</span> Metodologia</a>
+  <ul class="collapse">
+  <li><a href="#variáveis-e-distribuição" id="toc-variáveis-e-distribuição" class="nav-link" data-scroll-target="#variáveis-e-distribuição"><span class="header-section-number">2.1</span> Variáveis e Distribuição</a></li>
+  <li><a href="#modelos-competitivos-e-transformação-de-variáveis" id="toc-modelos-competitivos-e-transformação-de-variáveis" class="nav-link" data-scroll-target="#modelos-competitivos-e-transformação-de-variáveis"><span class="header-section-number">2.2</span> Modelos Competitivos e Transformação de Variáveis</a></li>
+  <li><a href="#funções-de-ligação-e-cálculo-da-de_50" id="toc-funções-de-ligação-e-cálculo-da-de_50" class="nav-link" data-scroll-target="#funções-de-ligação-e-cálculo-da-de_50"><span class="header-section-number">2.3</span> Funções de Ligação e Cálculo da <span class="math inline">\(DE_{50}\)</span></a></li>
+  <li><a href="#críterios-de-seleção-e-diagnóstico" id="toc-críterios-de-seleção-e-diagnóstico" class="nav-link" data-scroll-target="#críterios-de-seleção-e-diagnóstico"><span class="header-section-number">2.4</span> Críterios de Seleção e Diagnóstico</a></li>
+  </ul></li>
+  <li><a href="#análise-descritiva" id="toc-análise-descritiva" class="nav-link" data-scroll-target="#análise-descritiva"><span class="header-section-number">3</span> Análise Descritiva</a></li>
+  <li><a href="#ajuste-e-diagnóstico-do-modelo" id="toc-ajuste-e-diagnóstico-do-modelo" class="nav-link" data-scroll-target="#ajuste-e-diagnóstico-do-modelo"><span class="header-section-number">4</span> Ajuste e Diagnóstico do Modelo</a>
+  <ul class="collapse">
+  <li><a href="#qualidade-de-ajuste" id="toc-qualidade-de-ajuste" class="nav-link" data-scroll-target="#qualidade-de-ajuste"><span class="header-section-number">4.1</span> Qualidade de Ajuste</a></li>
+  <li><a href="#análise-de-resíduos" id="toc-análise-de-resíduos" class="nav-link" data-scroll-target="#análise-de-resíduos"><span class="header-section-number">4.2</span> Análise de Resíduos</a></li>
+  <li><a href="#variáveis-significativas" id="toc-variáveis-significativas" class="nav-link" data-scroll-target="#variáveis-significativas"><span class="header-section-number">4.3</span> Variáveis significativas</a></li>
+  </ul></li>
+  <li><a href="#interpretação-estatística-e-conclusão" id="toc-interpretação-estatística-e-conclusão" class="nav-link" data-scroll-target="#interpretação-estatística-e-conclusão"><span class="header-section-number">5</span> Interpretação Estatística e Conclusão</a></li>
+  <li><a href="#conclusão" id="toc-conclusão" class="nav-link" data-scroll-target="#conclusão"><span class="header-section-number">6</span> Conclusão</a></li>
+  <li><a href="#referências" id="toc-referências" class="nav-link" data-scroll-target="#referências"><span class="header-section-number">7</span> Referências</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Outros formatos</h2><ul><li><a href="dose_resposta.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Modelo de Dose-Resposta</h1>
+<p class="subtitle lead">Trabalho Final da disciplina de Modelos Lineares Generalizados</p>
 </div>
 
 
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Autores</div>
+  <div class="quarto-title-meta-heading">Afiliação</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Adryãn Lucas Santos </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Universidade Federal do Rio Grande do Norte (UFRN)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Christian David Martins Souza </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Universidade Federal do Rio Grande do Norte (UFRN)
+          </p>
+      </div>
+  </div>
 
 <div class="quarto-title-meta">
 
+      
     <div>
-    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-heading">Data de Publicação</div>
     <div class="quarto-title-meta-contents">
-             <p>Adryãn e Christian </p>
-          </div>
+      <p class="date">julho, 2026</p>
+    </div>
   </div>
-    
   
     
   </div>
@@ -138,27 +189,13 @@ window.Quarto = {
 </header>
 
 
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(faraway)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(drc)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DHARMa)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(easystats)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(earthworms)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>dados <span class="ot">&lt;-</span> earthworms</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<div style="page-break-after: always;"></div>
 <section id="introdução" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introdução</h1>
-<p><strong>Contextualização do problema, descrição da origem do conjunto de dados escolhido e a justificativa teórica inicial para a aplicação do modelo designado.</strong></p>
 <p>A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as microcas, quando expostas a solos contaminados.</p>
 <section id="descrição-e-origem-do-conjunto-de-dados" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="descrição-e-origem-do-conjunto-de-dados"><span class="header-section-number">1.1</span> Descrição e Origem do Conjunto de Dados</h2>
-<p>Este trabalho utiliza o conjunto de dados empíricos <code>earthworms</code>, disponibilizado no pacote <code>drc</code> do ambiente computacional R. Os dados originalmente fornecidos por <strong>Nina Cedergree</strong> (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.</p>
+<p>Este trabalho utiliza o conjunto de dados empíricos <code>earthworms</code>, disponibilizado no pacote <code>drc</code> do ambiente computacional R. Os dados originalmente fornecidos por <strong>Nina Cedergree</strong> (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipiente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.</p>
 </section>
 <section id="justificativa" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="justificativa"><span class="header-section-number">1.2</span> Justificativa</h2>
@@ -167,111 +204,45 @@ window.Quarto = {
 </section>
 <section id="metodologia" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Metodologia</h1>
-<p><strong>Detalhamento do tamanho amostral, definição clara da variável resposta e preditores, além da formulação matemática do modelo (função de ligação e componente de variância).</strong></p>
-<p>A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de microcas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, <span class="math inline">\(Y_i \sim Binomial(n_i, p_i)\)</span>. A proporção média esperada é <span class="math inline">\(E(Y_i/n_i) = p_i\)</span>, assumindo a componente de variância teórica <span class="math inline">\(Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}\)</span>.</p>
-<p>Para conectar a probabilidade <span class="math inline">\(p_i\)</span> ao preditor linear <span class="math inline">\(\eta_i\)</span>, serão ajustadas e comparadas três funções de ligação para dados binomiais:</p>
+<section id="variáveis-e-distribuição" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="variáveis-e-distribuição"><span class="header-section-number">2.1</span> Variáveis e Distribuição</h2>
+<p>A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, <span class="math inline">\(Y_i \sim Binomial(n_i, p_i)\)</span>. A proporção média esperada é <span class="math inline">\(E(Y_i/n_i) = p_i\)</span>, assumindo a componente de variância teórica <span class="math inline">\(Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}\)</span>.</p>
+<p>Para conectar a probabilidade <span class="math inline">\(p_i\)</span> ao preditor linear <span class="math inline">\(\eta_i\)</span>, serão ajustadas e comparadas duas funções de ligação para dados binomiais:</p>
 <ul>
 <li><strong>Logito</strong>: <span class="math inline">\(\eta_i = \log\left(\frac{p_i}{1-p_i}\right)\)</span></li>
-<li><strong>Probito</strong>: <span class="math inline">\(\eta_i = \Phi^1_{(p_i)}\)</span></li>
-<li><strong>Compementro Log-Log (Cloglog)</strong>: <span class="math inline">\(\eta_i = \log(-\log(1 - p_i))\)</span></li>
+<li><strong>Complemento Log-Log (Cloglog)</strong>: <span class="math inline">\(\eta_i = \log(-\log(1 - p_i))\)</span></li>
 </ul>
-<p>Em relação aos preditores, a componente sistemática exige atenção especial à dose zero (grupo controle). Como log(0) é matematicamente indefinido e o comportamento natural sem toxina resulta em uma divisão aproximada de metade das minhocas entre os recipientes, não é apropriado ajustar uma regressão ondinária usando apenas log(<em>dose</em>). Para contornar isso os preditores foram formulados em segmentos (<em>piewise</em>) com variáveis indicadoras (<em>dummy</em>), isolando o efeito do controle das doses ativas:</p>
+<p>Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que <span class="math inline">\(\log(0)\)</span> é indefinido. O comportamento natural sem toxina resulta em uma divisão aproximada da amostra entre os recipientes, inviabilizando o ajuste de uma regressão ordinária a <span class="math inline">\(\log(Dose)\)</span>. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:</p>
+<ul>
+<li><strong>Deslocamento escalar</strong>: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dado, testando os preditores <span class="math inline">\(\log(Dose + 1)\)</span> e <span class="math inline">\(\log(Dose + 0,1)\)</span>.</li>
+<li><strong>Variável indicadora (Dummy)</strong>: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:</li>
+</ul>
 <p><span class="math display">\[ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})\]</span></p>
-<p>A estimação dos parâmetros será feita pelo método da Máxima Verossimilhança. O melhor modelo será selecionado com base no menor Críterio de Informação de Akaike (AIC). Para o diagnóstico do ajuste, aplicaremos o Teste Qui-Quadrado no Desvio Residual e a inspeção gráfica de pressupostos utilizando resíduos quantílicos randomizados.</p>
+<p>A estimação dos parâmetros será feita pelo método da Máxima Verossimilhança. A seleção do melhor modelo basear-se-á no Critério de Informação de Akaike (AIC), em conjunto com métricas complementares de poder preditivo e explicativo, como Pseudo-<span class="math inline">\(R^2\)</span> de MacFadden e a Raiz do Erro Quadrático Médio (RMSE). Adicionalmente, a contribuição e significância de cada variável explicativa na componente sistemática será testada através de uma Análise de Desvio (tabela ANOVA) fundamentada na distribuição Qui-Quadrado.</p>
 </section>
-<section id="análise-descritiva" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Análise Descritiva</h1>
-<p><strong>Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.</strong></p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(earthworms, <span class="fu">aes</span>(<span class="at">x =</span> dose, <span class="at">y =</span> number<span class="sc">/</span>total)) <span class="sc">+</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"darkblue"</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Proporção de Minhocas Retidas vs Dose da Substância Tóxica"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Dose"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proporção Empírica (Ficaram/Total)"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fl">0.5</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="dose_resposta_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Na gráfico podemos observar que na dose zero (controle) cerca da metadade das minhocas naturalmente permanece no recipinete. A queda abrupta com o aumento da dose comprava que uma simples transoformação logarístmica direta da covariável é inadequada, reforçando a necessidade de isolar o grupo controle na modelagem.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>earthworms <span class="sc">|&gt;</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dose <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(dose), <span class="at">y =</span> number<span class="sc">/</span>total)) <span class="sc">+</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"darkblue"</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span> </span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Proporção de Retenção vs Logaritmo da Dose Ativa"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Log(Dose) (Excluindo o Controle)"</span>,</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proporção Empírica"</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="dose_resposta_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Excluindo-se o controle e plotando a resposta contra o logaritmo das doses ativas, observamos uma forma sigmoide descrescente. Esse padrão justifica o uso do logaritmo da dose como variável explicativa para as doses ativas.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>earthworms <span class="sc">|&gt;</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dose <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">elogit =</span> <span class="fu">log</span>((number <span class="sc">+</span> <span class="fl">0.5</span>) <span class="sc">/</span> (total <span class="sc">-</span> number <span class="sc">+</span> <span class="fl">0.5</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(dose), <span class="at">y =</span> elogit)) <span class="sc">+</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"darkblue"</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Logitos Empíricos vs Log(Dose)"</span>,</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Log(Dose) (Excluindo o Controle)"</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Logito Empírico"</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="dose_resposta_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notável tendência linear. A obtenção dessa linearidade é o diagnóstico visual perfeito de que a função de ligação logistica (Logito) está corretamente especificada para a componente sistemática do modelo.</p>
-</section>
-<section id="ajuste-e-diagnóstico-do-modelo" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> Ajuste e Diagnóstico do Modelo</h1>
+<section id="modelos-competitivos-e-transformação-de-variáveis" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="modelos-competitivos-e-transformação-de-variáveis"><span class="header-section-number">2.2</span> Modelos Competitivos e Transformação de Variáveis</h2>
 <p>Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-<span class="math inline">\(R^2\)</span> de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica dose efetiva mediana (DE50).</p>
 <p>Inicialmente, iremos ajustar os seguintes cinco modelos.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod_cloglog <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"cloglog"</span>), <span class="at">data =</span> earthworms)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>modelo_logit1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="dv">1</span>), <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>modelo_logit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="fl">0.1</span>), <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>mod_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> earthworms)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>controle <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>log_dose <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="fu">log</span>(dados<span class="sc">$</span>dose), <span class="dv">0</span>) </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>mod_glm_dummy <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> controle <span class="sc">+</span> log_dose, </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> dados, </span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mod_cloglog <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"cloglog"</span>), <span class="at">data =</span> earthworms)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>modelo_logit1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>modelo_logit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="fl">0.1</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>mod_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> earthworms)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>controle <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>log_dose <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="fu">log</span>(dados<span class="sc">$</span>dose), <span class="dv">0</span>) </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>mod_glm_dummy <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> controle <span class="sc">+</span> log_dose, </span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> dados, </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Que são, respectivamente:</p>
 <ul>
@@ -281,13 +252,41 @@ window.Quarto = {
 <li><p>Modelo Linear Generalizado Binomial com Ligação Logito padrão;</p></li>
 <li><p>Modelo Linear Generalizado Binomial com Ligação Logito e variáveis resposta modificadas (adição de variável e modificação);</p></li>
 </ul>
-<p>As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnetudes (escala logarítmica).</p>
+<p>As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnitudes (escala logarítmica).</p>
 <p>Portanto, se for usado a dose normalmente, o modelo vai dar um peso maior para as doses mais altas, ignorando o que acontece nas doses mais baixas. O log resolve isso espalhando as doses menores e aproximando as maiores, sendo o ideal para o ajuste logistico.</p>
-<p>Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o <code>log(dose + 1)</code> e então para minimizar a contribuição da constante foi-se usado o <code>log(dose + 0.1)</code>, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).</p>
-<p>Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável <em>“dummy”,</em> isto é, a variável indica se o valor da dose é zero, se for, não aplica o logarítimo, se não for, aplica o logarítimo, ao mesmo tempo evitando que seja feito <code>log(0)</code> e aplicando o logarítimo importante para o modelo.</p>
-<p>Com os modelos definidos, podemos seguir para a comparação e seleção deles.</p>
-<section id="comparação-dos-modelos" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="comparação-dos-modelos"><span class="header-section-number">4.1</span> Comparação dos modelos</h2>
+<p>Entretanto, apenas aplicar o logaritmo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o <code>log(dose + 1)</code> e então para minimizar a contribuição da constante foi-se usado o <code>log(dose + 0.1)</code>, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).</p>
+<p>Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável <em>“dummy”,</em> isto é, a variável indica se o valor da dose é zero, se for, não aplica o logaritmo, se não for, aplica o logaritmo, ao mesmo tempo evitando que seja feito <code>log(0)</code> e aplicando o logaritmo importante para o modelo.</p>
+</section>
+<section id="funções-de-ligação-e-cálculo-da-de_50" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="funções-de-ligação-e-cálculo-da-de_50"><span class="header-section-number">2.3</span> Funções de Ligação e Cálculo da <span class="math inline">\(DE_{50}\)</span></h2>
+<p>Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.</p>
+<p>A dose efetiva mediana (DE50) é a dose de uma substância que produz um efeito específico em exatamente 50% dos indivíduos testados. Para o nosso contexto, a DE50 é a dosagem exata do contaminante necessária para fazer com que 50% das minhocas migrem.</p>
+<p>A definição da DE50 difere para cada função de ligação do modelo. Como aqui estamos tratando modelos com ligação complemento log-log e logito, podemos definir a DE50 como, para o modelo com ligação complemento log-log:</p>
+<p>Seja a função de ligação complemento log-log expressa por:</p>
+<p><span class="math display">\[\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X\]</span></p>
+<p>Para definirmos a DE50, substitui-se a probabilidade $p$ por 0,5, tendo:</p>
+<p><span class="math display">\[log(-log(1 - 0.5)) = log(-log(0.5))\]</span></p>
+<p>Resolvendo, chegamos à conclusão que:</p>
+<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = - 0.3665\]</span></p>
+<p>Isolando o $X_{50}$ que representa a DE50, chegamos na conclusão que:</p>
+<p><span class="math display">\[DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}\]</span></p>
+<p>Já para o modelo com ligação logito, temos que:</p>
+<p>Seja a função de ligação logito expressa por:</p>
+<p><span class="math display">\[\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X\]</span></p>
+<p>Substituindo a probabilidade $p$ por 0,5, temos:</p>
+<p><span class="math display">\[log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0\]</span></p>
+<p>Resolvendo, chegamos à conclusão que:</p>
+<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}\]</span></p>
+<p>Nos casos em que a transformação logarítmica foi aplicada à variável explicativa, o valor isolado deve ser convertido de volta à escala original usando a função exponencial. Para o modelo com função de ligação Logito e variável indicadora (Dummy), a análise concentra-se nas amostras submetidas à substáncia ativa(<span class="math inline">\(I_ {\text{controle}} = 0\)</span>). A função de ligação é reduzida a:</p>
+<p><span class="math display">\[\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_2\log(\text{Dose}_{\text{ativa}})\]</span></p>
+<p>Substituindo a probabilidade <span class="math inline">\(p\)</span> por 0,5:</p>
+<p><span class="math display">\[\log\left(\frac{0,5}{0,5}\right) = \log(0) = 0\]</span></p>
+<p><span class="math display">\[0 = \beta_0 + \beta_2\log(\text{Dose}_{\text{ativa}})\]</span></p>
+<p>Isolando a dose de interesse e convertendo de volta à escala original via função exponencial, obtém-se:</p>
+<p><span class="math display">\[DE_{50} = \exp\left(-\frac{\beta_0}{\beta_2}\right)\]</span></p>
+</section>
+<section id="críterios-de-seleção-e-diagnóstico" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="críterios-de-seleção-e-diagnóstico"><span class="header-section-number">2.4</span> Críterios de Seleção e Diagnóstico</h2>
 <p>Iremos utilizar 4 critérios para selecionar o modelo ideal:<br>
 </p>
 <ul>
@@ -296,10 +295,48 @@ window.Quarto = {
 <li><p>Pseudo-<span class="math inline">\(R^2\)</span> de McFadden: quanto maior, melhor;</p></li>
 <li><p>Raiz do Erro Quadrático Médio (RMSE): quanto menor, melhor.</p></li>
 </ul>
-<p>Além destes, há também uma métrica que pode servir como critério, sendo ele a dose efetiva mediana (DE50), neste, iremos observar se o valor é condizente com o contexto, nesse caso, qualquer modelo que apresentar em seu intervalo de confiança valores negativos pode ser considerado inconsistente e descartado, a incosistência vem de que não existe dose negativa, portanto valores negativos de dose efetiva mediana são inconsistentes.</p>
-<p>Com isso definido, iniciaremos pela comparação dos AICs:</p>
+<p>Além destes, há também uma métrica que pode servir como critério, sendo ele a dose efetiva mediana (DE50), neste, iremos observar se o valor é condizente com o contexto, nesse caso, qualquer modelo que apresentar em seu intervalo de confiança valores negativos pode ser considerado inconsistente e descartado, a inconsistência vem de que não existe dose negativa, portanto valores negativos de dose efetiva mediana são inconsistentes.</p>
+</section>
+</section>
+<section id="análise-descritiva" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Análise Descritiva</h1>
+<p>Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(mod_cloglog, modelo_logit1, modelo_logit2, mod_logit, mod_glm_dummy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>No gráfico podemos observar que na dose zero (controle) cerca da metadade das minhocas naturalmente permanece no recipiente. A queda abrupta com o aumento da dose comprova que uma simples transformação logarítmica direta da covariável é inadequada, reforçando a necessidade de isolar o grupo controle na modelagem.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Excluindo-se o controle e plotando a resposta contra o logaritmo das doses ativas, observamos uma forma sigmoide descrescente. Esse padrão justifica o uso do logaritmo da dose como variável explicativa para as doses ativas.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>O uso de logitos empíricos plotados contra o logaritmo da dose mostra uma notável tendência linear. A obtenção dessa linearidade é o diagnóstico visual perfeito de que a função de ligação logistica (Logito) está corretamente especificada para a componente sistemática do modelo.</p>
+</section>
+<section id="ajuste-e-diagnóstico-do-modelo" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Ajuste e Diagnóstico do Modelo</h1>
+<p>Com os modelos definidos, podemos seguir para a comparação e seleção deles.</p>
+<p>Iniciaremos pela comparação dos AICs:</p>
+<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>              df      AIC
 mod_cloglog    2 91.81223
@@ -311,15 +348,6 @@ mod_glm_dummy  3 78.33592</code></pre>
 </div>
 <p>Para o AIC percebe-se que o modelo logito padrão, complemento log-log e o modelo logito deslocado à 1 unidade apresentam os maiores AICs, o que não é ideal, já aqui pode-se descartar os modelos logito padrão e logito deslocado à 1 unidade, o modelo complemento log-log apesar de apresentar um AIC alto comparado aos outros não será descartado a fins de comparação de ligações posteriores.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df_deviance <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Modelo =</span> <span class="fu">c</span>(<span class="st">"Complemento Log-Log"</span>, <span class="st">"Logito com log(dose + 0.1)"</span>, <span class="st">"Logito com dummy"</span>),</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Desvio =</span> <span class="fu">c</span>(<span class="fu">deviance</span>(mod_cloglog), <span class="fu">deviance</span>(modelo_logit2), <span class="fu">deviance</span>(mod_glm_dummy)))</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>kableExtra<span class="sc">::</span><span class="fu">kable</span>(df_deviance, </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">booktabs =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">digits =</span> <span class="dv">4</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Modelo"</span>, <span class="st">"Desvio Residual"</span>),</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"Comparação da Desvio Residual entre os modelos"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Comparação da Desvio Residual entre os modelos</caption>
@@ -348,22 +376,6 @@ mod_glm_dummy  3 78.33592</code></pre>
 </div>
 <p>Para a comparação dos desvios dos modelos restantes percebe-se novamente que o modelo complemento log-log apresenta as piores métricas, tendo o maior desvio com uma diferença considerável, enquanto os modelos logito restantes tem uma diferença mínima entre eles.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>r2_mcfadden_cloglog <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="fu">summary</span>(mod_cloglog)<span class="sc">$</span>deviance <span class="sc">/</span> <span class="fu">summary</span>(mod_glm_dummy)<span class="sc">$</span>null.deviance)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>r2_mcfadden_logit2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="fu">summary</span>(modelo_logit2)<span class="sc">$</span>deviance <span class="sc">/</span> <span class="fu">summary</span>(modelo_logit2)<span class="sc">$</span>null.deviance)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>r2_mcfadden_glm_dummy <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="fu">summary</span>(mod_glm_dummy)<span class="sc">$</span>deviance <span class="sc">/</span> <span class="fu">summary</span>(modelo_logit2)<span class="sc">$</span>null.deviance)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>df_r2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Modelo =</span> <span class="fu">c</span>(<span class="st">"Complemento Log-Log"</span>, <span class="st">"Logito com log(dose + 0.1)"</span>, <span class="st">"Logito com dummy"</span>),</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">R2 de McFadden</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(r2_mcfadden_cloglog, r2_mcfadden_logit2, r2_mcfadden_glm_dummy),</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">check.names =</span> <span class="cn">FALSE</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df_r2, </span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">booktabs =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">digits =</span> <span class="dv">4</span>,</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"Pseudo-R2 de McFadden para cada modelo ajustado"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Pseudo-R2 de McFadden para cada modelo ajustado</caption>
@@ -392,16 +404,6 @@ mod_glm_dummy  3 78.33592</code></pre>
 </div>
 <p>No pseudo-<span class="math inline">\(R^2\)</span> temos mais uma vez uma diferença grande entre o complemento log-log e os logitos, enquanto os logitos, entre si, tem uma diferença marginal. Além disso, no geral podemos afirmar que para qualquer um dos modelos, temos valores ótimos de R², evidenciando a qualidade dos modelos.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_rmse <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Modelo =</span> <span class="fu">c</span>(<span class="st">"Complemento Log-Log"</span>, <span class="st">"Logito com log(dose + 0.1)"</span>, <span class="st">"Logito com dummy"</span>),</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">RMSE =</span> <span class="fu">c</span>(performance<span class="sc">::</span><span class="fu">rmse</span>(mod_cloglog), performance<span class="sc">::</span><span class="fu">rmse</span>(modelo_logit2), performance<span class="sc">::</span><span class="fu">rmse</span>(mod_glm_dummy))</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(df_rmse, </span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">booktabs =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">digits =</span> <span class="dv">4</span>,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Modelo"</span>, <span class="st">"RMSE"</span>),</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="st">"Raiz do Erro Quadrático Médio (RMSE) dos modelos"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Raiz do Erro Quadrático Médio (RMSE) dos modelos</caption>
@@ -429,75 +431,13 @@ mod_glm_dummy  3 78.33592</code></pre>
 </div>
 </div>
 <p>Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.</p>
-<p>Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.</p>
-<p>A dose efetiva mediana (DE50) é a dose de uma substância que produz um efeito específico em exatamente 50% dos indivíduos testados. Para o nosso contexto, a DE50 é a dosagem exata do contaminante necessária para fazer com que 50% das minhocas migrem.</p>
-<p>A definição da DE50 difere para cada função de ligação do modelo. Como aqui estamos tratando modelos com ligação complemento log-log e logito, podemos definir a DE50 como, para o modelo com ligação complemento log-log:</p>
-<p>Seja a função de ligação complemento log-log expressa por:</p>
-<p><span class="math display">\[\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X\]</span></p>
-<p>Para definirmos a DE50, substitui-se a probabilidade $p$ por 0,5, tendo:</p>
-<p><span class="math display">\[log(-log(1 - 0.5)) = log(-log(0.5))\]</span></p>
-<p>Resolvendo, chegamos à conclusão que:</p>
-<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = - 0.3665\]</span></p>
-<p>Isolando o $X_{50}$ que representa a DE50, chegamos na conclusão que:</p>
-<p><span class="math display">\[DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}\]</span></p>
-<p>Já para o modelo com ligação logito, temos que:</p>
-<p>Seja a função de ligação logito expressa por:</p>
-<p><span class="math display">\[\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X\]</span></p>
-<p>Substituindo a probabilidade $p$ por 0,5, temos:</p>
-<p><span class="math display">\[log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0\]</span></p>
-<p>Resolvendo, chegamos à conclusão que:</p>
-<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}\]</span></p>
-<p>Mas note que, nos casos em que o logarítimo foi aplicado à dose, a $DE_{50}$ deve ser convertido de volta à escala original usando <code>exp()</code> .</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Métrica DE50</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Mod_cloglog</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>res_cloglog <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(mod_cloglog, <span class="at">p =</span> <span class="fl">0.5</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>de50_cloglog <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_cloglog)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>se_cloglog <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_cloglog, <span class="st">"SE"</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>ic_inf_cloglog <span class="ot">&lt;-</span> de50_cloglog <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_cloglog</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>ic_sup_cloglog <span class="ot">&lt;-</span> de50_cloglog <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_cloglog</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (cloglog):"</span>, de50_cloglog, <span class="st">"[95% IC:"</span>, ic_inf_cloglog, <span class="st">";"</span>, ic_sup_cloglog, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>DE50 (cloglog): -0.1067457 [95% IC: -0.3984615 ; 0.1849701 ]</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## modelo_logit2</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>res_logit2 <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(modelo_logit2, <span class="at">p =</span> <span class="fl">0.5</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>x50_logit2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_logit2)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>se_logit2  <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_logit2, <span class="st">"SE"</span>)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>ic_inf_log2 <span class="ot">&lt;-</span> x50_logit2 <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_logit2</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>ic_sup_log2 <span class="ot">&lt;-</span> x50_logit2 <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_logit2</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># destransforma</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>de50_logit2   <span class="ot">&lt;-</span> <span class="fu">exp</span>(x50_logit2) <span class="sc">-</span> <span class="fl">0.1</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>ic_inf_logit2 <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_inf_log2) <span class="sc">-</span> <span class="fl">0.1</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>ic_sup_logit2 <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_sup_log2) <span class="sc">-</span> <span class="fl">0.1</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (logit2):"</span>, de50_logit2, <span class="st">"[95% IC:"</span>, ic_inf_logit2, <span class="st">";"</span>, ic_sup_logit2, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>DE50 (logit2): 0.07321785 [95% IC: 0.01983951 ; 0.1503717 ]</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## mod_glm_dummy</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cf = c(1, 3) pra tirar a variável dummy</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>res_dummy <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(mod_glm_dummy, <span class="at">cf =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="at">p =</span> <span class="fl">0.5</span>)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>x50_dummy <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_dummy)</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>se_dummy  <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_dummy, <span class="st">"SE"</span>)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>ic_inf_log_d <span class="ot">&lt;-</span> x50_dummy <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_dummy</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>ic_sup_log_d <span class="ot">&lt;-</span> x50_dummy <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_dummy</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># destransforma</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>de50_dummy   <span class="ot">&lt;-</span> <span class="fu">exp</span>(x50_dummy)</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>ic_inf_dummy <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_inf_log_d)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>ic_sup_dummy <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_sup_log_d)</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (Dummy):"</span>, de50_dummy, <span class="st">"[95% IC:"</span>, ic_inf_dummy, <span class="st">";"</span>, ic_sup_dummy, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>DE50 (Dummy): 0.1451175 [95% IC: 0.08828153 ; 0.2385447 ]</code></pre>
 </div>
@@ -505,28 +445,20 @@ mod_glm_dummy  3 78.33592</code></pre>
 <p>Agora analisando as estimativas, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.</p>
 <p>Além disso, os outros dois modelos resultaram em intervalos de confiança consistentes (tudo positivo), portanto, podem ser considerados como válidos.</p>
 <p>Entretanto, agora com todas as métricas de comparação apresentadas, iremos prosseguir apenas com o modelo que mais se destacou, isso é, o modelo que apresentou as melhores métricas, mas não só isso, melhor interpretabilidade, portanto, o modelo escolhido será o Modelo Linear Generalizado Binomial com Função de Ligação Logito e Variável Dummy. Pois esse modelo não só apresentou as melhores métricas, como também deve apresentar interpretações bem mais fáceis de se fazer, uma vez que a sua variável explicativa não houve deslocamento como o outro modelo.</p>
-</section>
-<section id="qualidade-de-ajuste" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="qualidade-de-ajuste"><span class="header-section-number">4.2</span> Qualidade de Ajuste</h2>
+<section id="qualidade-de-ajuste" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="qualidade-de-ajuste"><span class="header-section-number">4.1</span> Qualidade de Ajuste</h2>
 <p>Com o modelo selecionado, iremos verificar a bondade do ajuste pelo desvio (Deviance Goodness-of-Fit), que compara o erro do modelo contra um modelo perfeito (saturado). Podemos tirar conclusão disso a partir de um p-valor, onde quanto maior esse p-valor, melhor está ajustado o modelo.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dev_residual <span class="ot">&lt;-</span> <span class="fu">deviance</span>(mod_glm_dummy)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>graus_liberdade <span class="ot">&lt;-</span> <span class="fu">summary</span>(mod_glm_dummy)<span class="sc">$</span>df.residual</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calcular o p-valor do teste</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>p_valor_ajuste <span class="ot">&lt;-</span> <span class="fu">pchisq</span>(dev_residual, graus_liberdade, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"P-valor da Bondade de Ajuste (Desvio):"</span>, p_valor_ajuste, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>P-valor da Bondade de Ajuste (Desvio): 0.6422658 </code></pre>
 </div>
 </div>
 <p>O p-valor resultante é bem alto, confirmando assim que o modelo está bem ajustado aos dados.</p>
 </section>
-<section id="análise-de-resíduos" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="análise-de-resíduos"><span class="header-section-number">4.3</span> Análise de Resíduos</h2>
+<section id="análise-de-resíduos" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="análise-de-resíduos"><span class="header-section-number">4.2</span> Análise de Resíduos</h2>
 <p>Para confirmar que o nosso modelo está bem ajustado aos dados, iremos verificar os pressupostos de homogeneiedade, pontos influentes, colinearidade e distribuição dos resíduos.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_model</span>(mod_glm_dummy, <span class="at">panel =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -566,24 +498,19 @@ mod_glm_dummy  3 78.33592</code></pre>
 <p>Com a análise apresentada, podemos confirmar que o modelo está ótimo. Na homogeneidade está de acordo com o padrão para modelos binomiais, não há pontos influentes, não há colinearidade e os resíduos seguem a distribuição de referência.</p>
 <p>Para fins de maior confirmação, iremos checar a superdispersão dos dados, uma vez que caso haja, a análise de resíduos pode estar apontando falsos positivos.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>performance<span class="sc">::</span><span class="fu">check_overdispersion</span>(mod_glm_dummy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># Overdispersion test
 
  dispersion ratio = 0.977
           p-value = 0.968</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>No overdispersion detected.</code></pre>
-</div>
 </div>
 <p>Portanto, é confirmado que não há superdispersão dos dados e a análise de resíduos é válida.</p>
 </section>
-<section id="variáveis-significativas" class="level2" data-number="4.4">
-<h2 data-number="4.4" class="anchored" data-anchor-id="variáveis-significativas"><span class="header-section-number">4.4</span> Variáveis significativas</h2>
+<section id="variáveis-significativas" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="variáveis-significativas"><span class="header-section-number">4.3</span> Variáveis significativas</h2>
 <p>Para confirmar que a inclusão da variável dummy é significativa ao modelo, iremos realizar uma ANOVA.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(mod_glm_dummy, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Analysis of Deviance Table
 
@@ -609,37 +536,52 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>Com o modelo devidamente validado, podemos seguir para as interpretações de seus coeficientes e métricas.</p>
 <p>É importante ressaltar que há uma variável dummy neste modelo, ela separa quando há dose no solo e quando não há dose no solo, dessa forma, as interpretações podem ser voltadas à presença da dose no solo.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(mod_glm_dummy, <span class="at">exponentiate =</span> T)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 2
-  term        estimate
-  &lt;chr&gt;          &lt;dbl&gt;
-1 (Intercept)   0.0878
-2 controle     17.1   
-3 log_dose      0.284 </code></pre>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Estimativas dos Parâmetros do Modelo (Escala Exponencial)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Termo</th>
+<th style="text-align: right;">Estimativa (Razão de Chance)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">0.0878</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">controle</td>
+<td style="text-align: right;">17.0798</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_dose</td>
+<td style="text-align: right;">0.2836</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<p>Com os coeficientes, podemos interpretar que:</p>
+<p>Com base nos coeficientes, interpreta-se que:</p>
 <ul>
-<li><p>Intercepto: Quando há uma dose no solo, pode-se afirmar que a chance de permanência da minhoca é de menos de 9%, indicando que mesmo em baixas doses, o efeito da dose no solo já é considerável;</p></li>
-<li><p>Controle: a chance de uma minhoca ficar no solo controle (sem dose) é 17,08 vezes maior do que a chance de ela ficar no solo com a dose de referência (dose = 1);</p></li>
-<li><p>Dose ativa: cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.</p></li>
+<li><p><strong>Intercepto</strong>: A uma dose ativa de 1 unidade no solo (<span class="math inline">\(\log(1) = 0\)</span>), a chance estimada de permanência da minhoca no recipiente contaminado é de 8,78%.</p></li>
+<li><p><strong>Controle</strong>: A chance de uma minhoca permanecer no solo controle (sem dose) é 17,08 vezes maior do que a chance de permanência no solo exposto à dose ativa de referência (1 unidade).</p></li>
+<li><p><strong>Dose ativa</strong>: Cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.</p></li>
 </ul>
-<p>Podemos concluir, portanto, que a substância dosada no solo é efetiva no controle da permanência das minhocas no solo, até mesmo em baixas dosagens.</p>
-<p>Para concluir, vamos relembrar do $DE_{50}$.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (Dummy):"</span>, de50_dummy, <span class="st">"[95% IC:"</span>, ic_inf_dummy, <span class="st">";"</span>, ic_sup_dummy, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>DE50 (Dummy): 0.1451175 [95% IC: 0.08828153 ; 0.2385447 ]</code></pre>
-</div>
-</div>
-<p>Com estes valores de $DE_{50}$, podemos afirmar que a dosagem que separa metade das minhocas, isto é, metade das minhocas migram para solo que não está contaminado está, com 95% de confiança, entre 0,0883 e 0,2385.</p>
 </section>
 <section id="conclusão" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Conclusão</h1>
+<p>A substância toxicológica avaliada demonstra alta eficácia na indução do comportamento de fuga das minhocas, apresentando impacto significativo na redução da chance de permanência mesmo em baixas dosagens. A análise diagnóstica confirmou a adequação do Modelo Linear Generalizado com ligação logística e particionamento da dose via variável indicadora para a descrição deste fenômeno.</p>
+<p>A dose efetiva mediana (<span class="math inline">\(DE_{50}\)</span>), métrica que estabelece a concentração exata necessária para forçar a migração de 50% da amostra exposta, foi estimada em 0,1451 unidades. Computando a variabilidade amostral, afirma-se, com 95% de confiança estatística, que o verdadeiro limite de tolerância populacional que divide o comportamento da espécie encontra-se no intervalo entre 0,0883 e 0,2385. Tais limites não negativos atestam a validade preditiva do modelo selecionado e fornecem um referencial quantitativo seguro para futuras intervenções ecotoxicológicas.</p>
+<div style="page-break-after: always;"></div>
 </section>
 <section id="referências" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> Referências</h1>
+<p><strong>CEDERGREEN, N.; RITZ, C.</strong> <em>earthworms: Earthworm toxicity test</em>. R package ‘drc’ documentation, versão 3.0-1. Disponível em: <a href="https://www.rdocumentation.org/packages/drc/versions/3.0-1/topics/earthworms" class="uri">https://www.rdocumentation.org/packages/drc/versions/3.0-1/topics/earthworms</a>.</p>
+<p><strong>DUNN, P. K.; SMYTH, G. K.</strong> <em>Generalized Linear Models With Examples in R</em>. Springer Texts in Statistics. Nova York: Springer, 2018.</p>
+<p><strong>FARAWAY, J. J.</strong> <em>Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models</em>. Boca Raton: Chapman &amp; Hall/CRC, 2006.</p>
+<p><strong>HERMES, Prof.</strong> <em>Modelos Lineares Generalizados</em>. Material de aula (Slides).</p>
+<p><strong>RITZ, C.; BATY, F.; STREIBIG, J. C.; GERHARD, D.</strong> Dose-Response Analysis Using R. <em>PLoS ONE</em>, v. 10, n.&nbsp;12, e0146021, 2015. DOI: 10.1371/journal.pone.0146021. Disponível em: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4696819/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC4696819/</a>.</p>
 </section>
 
 </main>
@@ -669,12 +611,12 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copied!");
+      button.setAttribute("title", "Copiada");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copied!");
+        button.setAttribute("data-bs-title", "Copiada");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",

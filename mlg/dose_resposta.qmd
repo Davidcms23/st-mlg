@@ -1,20 +1,45 @@
 ---
 title: "Modelo de Dose-Resposta"
-author: "Adryãn e Christian"
+subtitle: "Trabalho Final da disciplina de Modelos Lineares Generalizados"
+author: 
+  - name: "Adryãn Lucas Santos"
+    affiliations:
+      - name: "Universidade Federal do Rio Grande do Norte (UFRN)"
+  - name: "Christian David Martins Souza"
+    affiliations:
+      - name: "Universidade Federal do Rio Grande do Norte (UFRN)"
+date: today
+date-format: "MMMM, YYYY"
+lang: pt-BR
 format:
   html:
+    theme: cosmo
     number-sections: true
+    toc: true
+    toc-title: "Sumário"
   pdf:
+    documentclass: article
+    classoption: titlepage
     number-sections: true
+    toc: true
+    toc-title: "Sumário"
+    geometry:
+      - top=30mm
+      - left=30mm
+      - right=20mm
+      - bottom=20mm
 editor: visual
 execute:
   cache: true
+  warning: false
+  message: false
 ---
 
 ```{r}
 #| message: false
-#| warning: false
 #| results: hide
+#| warning: false
+#| echo: false
 
 library(tidyverse)
 library(MASS)
@@ -25,21 +50,22 @@ library(dplyr)
 library(DHARMa)
 library(easystats)
 library(knitr)
+library(broom)
 
 data(earthworms)
 dados <- earthworms
 
 ```
 
-# Introdução
+\newpage
 
-**Contextualização do problema, descrição da origem do conjunto de dados escolhido e a justificativa teórica inicial para a aplicação do modelo designado.**
+# Introdução
 
 A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as microcas, quando expostas a solos contaminados.
 
 ## Descrição e Origem do Conjunto de Dados
 
-Este trabalho utiliza o conjunto de dados empíricos `earthworms`, disponibilizado no pacote `drc` do ambiente computacional R. Os dados originalmente fornecidos por **Nina Cedergree** (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.
+Este trabalho utiliza o conjunto de dados empíricos `earthworms`, disponibilizado no pacote `drc` do ambiente computacional R. Os dados originalmente fornecidos por **Nina Cedergree** (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipiente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.
 
 ## Justificativa
 
@@ -47,75 +73,25 @@ Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou nã
 
 # Metodologia
 
-**Detalhamento do tamanho amostral, definição clara da variável resposta e preditores, além da formulação matemática do modelo (função de ligação e componente de variância).**
+## Variáveis e Distribuição
 
-A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de microcas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, $Y_i \sim Binomial(n_i, p_i)$. A proporção média esperada é $E(Y_i/n_i) = p_i$, assumindo a componente de variância teórica $Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}$.
+A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, $Y_i \sim Binomial(n_i, p_i)$. A proporção média esperada é $E(Y_i/n_i) = p_i$, assumindo a componente de variância teórica $Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}$.
 
-Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustadas e comparadas três funções de ligação para dados binomiais:
+Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustadas e comparadas duas funções de ligação para dados binomiais:
 
 - **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$
-- **Probito**: $\eta_i = \Phi^1_{(p_i)}$
-- **Compementro Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
+- **Complemento Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
 
-Em relação aos preditores, a componente sistemática exige atenção especial à dose zero (grupo controle). Como log(0) é matematicamente indefinido e o comportamento natural sem toxina resulta em uma divisão aproximada de metade das minhocas entre os recipientes, não é apropriado ajustar uma regressão ondinária usando apenas log(*dose*). Para contornar isso os preditores foram formulados em segmentos (*piewise*) com variáveis indicadoras (*dummy*), isolando o efeito do controle das doses ativas:
+Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que $\log(0)$ é indefinido. O comportamento natural sem toxina resulta em uma divisão aproximada da amostra entre os recipientes, inviabilizando o ajuste de uma regressão ordinária a $\log(Dose)$. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:
+
+ - **Deslocamento escalar**: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dado, testando os preditores $\log(Dose + 1)$ e $\log(Dose + 0,1)$.
+ - **Variável indicadora (Dummy)**: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:
 
 $$ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})$$
 
-A estimação dos parâmetros será feita pelo método da Máxima Verossimilhança. O melhor modelo será selecionado com base no menor Críterio de Informação de Akaike (AIC). Para o diagnóstico do ajuste, aplicaremos o Teste Qui-Quadrado no Desvio Residual e a inspeção gráfica de pressupostos utilizando resíduos quantílicos randomizados.
+A estimação dos parâmetros será feita pelo método da Máxima Verossimilhança. A seleção do melhor modelo basear-se-á no Critério de Informação de Akaike (AIC), em conjunto com métricas complementares de poder preditivo e explicativo, como Pseudo-$R^2$ de MacFadden e a Raiz do Erro Quadrático Médio (RMSE). Adicionalmente, a contribuição e significância de cada variável explicativa na componente sistemática será testada através de uma Análise de Desvio (tabela ANOVA) fundamentada na distribuição Qui-Quadrado.
 
-# Análise Descritiva
-
-**Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.**
-
-```{r}
-ggplot(earthworms, aes(x = dose, y = number/total)) +
-  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
-  theme_minimal() +
-  labs(
-    title = "Proporção de Minhocas Retidas vs Dose da Substância Tóxica",
-    x = "Dose",
-    y = "Proporção Empírica (Ficaram/Total)"
-  ) +
-  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red")
-
-```
-
-Na gráfico podemos observar que na dose zero (controle) cerca da metadade das minhocas naturalmente permanece no recipinete. A queda abrupta com o aumento da dose comprava que uma simples transoformação logarístmica direta da covariável é inadequada, reforçando a necessidade de isolar o grupo controle na modelagem.
-
-```{r}
-earthworms |> 
-  filter(dose > 0) |> 
-  ggplot(aes(x = log(dose), y = number/total)) +
-  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
-  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") + 
-  theme_minimal() +
-  labs(
-    title = "Proporção de Retenção vs Logaritmo da Dose Ativa",
-    x = "Log(Dose) (Excluindo o Controle)",
-    y = "Proporção Empírica"
-  )
-```
-
-Excluindo-se o controle e plotando a resposta contra o logaritmo das doses ativas, observamos uma forma sigmoide descrescente. Esse padrão justifica o uso do logaritmo da dose como variável explicativa para as doses ativas.
-
-```{r}
-earthworms |> 
-  filter(dose > 0) |> 
-  mutate(elogit = log((number + 0.5) / (total - number + 0.5))) %>%
-  ggplot(aes(x = log(dose), y = elogit)) +
-  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
-  theme_minimal() +
-  labs(
-    title = "Logitos Empíricos vs Log(Dose)",
-    x = "Log(Dose) (Excluindo o Controle)",
-    y = "Logito Empírico"
-  )
-```
-
-O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notável tendência linear. A obtenção dessa linearidade é o diagnóstico visual perfeito de que a função de ligação logistica (Logito) está corretamente especificada para a componente sistemática do modelo.
-
-# Ajuste e Diagnóstico do Modelo
+## Modelos Competitivos e Transformação de Variáveis
 
 Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-$R^2$ de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica dose efetiva mediana (DE50).
 
@@ -125,10 +101,12 @@ Inicialmente, iremos ajustar os seguintes cinco modelos.
 mod_cloglog <- glm(cbind(number, total - number) ~ dose,
                    family = binomial(link = "cloglog"), data = earthworms)
 
-modelo_logit1 <- glm(cbind(number, total - number) ~ log(dose + 1), data = earthworms, family = binomial(link = "logit"))
+modelo_logit1 <- glm(cbind(number, total - number) ~ log(dose + 1),
+                     data = earthworms, family = binomial(link = "logit"))
 
 
-modelo_logit2 <- glm(cbind(number, total - number) ~ log(dose + 0.1), data = earthworms, family = binomial(link = "logit"))
+modelo_logit2 <- glm(cbind(number, total - number) ~ log(dose + 0.1),
+                     data = earthworms, family = binomial(link = "logit"))
 
 mod_logit <- glm(cbind(number, total - number) ~ dose,
                  family = binomial(link = "logit"), data = earthworms)
@@ -138,6 +116,7 @@ dados$log_dose <- ifelse(dados$dose > 0, log(dados$dose), 0)
 mod_glm_dummy <- glm(cbind(number, total - number) ~ controle + log_dose, 
                      data = dados, 
                      family = binomial(link = "logit"))
+
 ```
 
 Que são, respectivamente:
@@ -152,89 +131,16 @@ Que são, respectivamente:
 
 - Modelo Linear Generalizado Binomial com Ligação Logito e variáveis resposta modificadas (adição de variável e modificação);
 
-As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnetudes (escala logarítmica).
+As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnitudes (escala logarítmica).
 
 Portanto, se for usado a dose normalmente, o modelo vai dar um peso maior para as doses mais altas, ignorando o que acontece nas doses mais baixas. O log resolve isso espalhando as doses menores e aproximando as maiores, sendo o ideal para o ajuste logistico.
 
-Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o `log(dose + 1)` e então para minimizar a contribuição da constante foi-se usado o `log(dose + 0.1)`, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).
+Entretanto, apenas aplicar o logaritmo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o `log(dose + 1)` e então para minimizar a contribuição da constante foi-se usado o `log(dose + 0.1)`, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).
 
-Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável *"dummy",* isto é, a variável indica se o valor da dose é zero, se for, não aplica o logarítimo, se não for, aplica o logarítimo, ao mesmo tempo evitando que seja feito `log(0)` e aplicando o logarítimo importante para o modelo.
+Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável *"dummy",* isto é, a variável indica se o valor da dose é zero, se for, não aplica o logaritmo, se não for, aplica o logaritmo, ao mesmo tempo evitando que seja feito `log(0)` e aplicando o logaritmo importante para o modelo.
 
-Com os modelos definidos, podemos seguir para a comparação e seleção deles.
 
-## Comparação dos modelos
-
-Iremos utilizar 4 critérios para selecionar o modelo ideal:\
-
-- Critério de Informação de Akaike (AIC): quanto menor, melhor;
-
-- Desvio (Deviance): quanto menor, melhor;
-
-- Pseudo-$R^2$ de McFadden: quanto maior, melhor;
-
-- Raiz do Erro Quadrático Médio (RMSE): quanto menor, melhor.
-
-Além destes, há também uma métrica que pode servir como critério, sendo ele a dose efetiva mediana (DE50), neste, iremos observar se o valor é condizente com o contexto, nesse caso, qualquer modelo que apresentar em seu intervalo de confiança valores negativos pode ser considerado inconsistente e descartado, a incosistência vem de que não existe dose negativa, portanto valores negativos de dose efetiva mediana são inconsistentes.
-
-Com isso definido, iniciaremos pela comparação dos AICs:
-
-```{r}
-AIC(mod_cloglog, modelo_logit1, modelo_logit2, mod_logit, mod_glm_dummy)
-```
-
-Para o AIC percebe-se que o modelo logito padrão, complemento log-log e o modelo logito deslocado à 1 unidade apresentam os maiores AICs, o que não é ideal, já aqui pode-se descartar os modelos logito padrão e logito deslocado à 1 unidade, o modelo complemento log-log apesar de apresentar um AIC alto comparado aos outros não será descartado a fins de comparação de ligações posteriores.
-
-```{r}
-df_deviance <- data.frame(
-  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
-  Desvio = c(deviance(mod_cloglog), deviance(modelo_logit2), deviance(mod_glm_dummy)))
-
-kableExtra::kable(df_deviance, 
-      booktabs = TRUE, 
-      digits = 4,
-      col.names = c("Modelo", "Desvio Residual"),
-      caption = "Comparação da Desvio Residual entre os modelos")
-```
-
-Para a comparação dos desvios dos modelos restantes percebe-se novamente que o modelo complemento log-log apresenta as piores métricas, tendo o maior desvio com uma diferença considerável, enquanto os modelos logito restantes tem uma diferença mínima entre eles.
-
-```{r}
-
-r2_mcfadden_cloglog <- 1 - (summary(mod_cloglog)$deviance / summary(mod_glm_dummy)$null.deviance)
-
-r2_mcfadden_logit2 <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
-
-r2_mcfadden_glm_dummy <- 1 - (summary(mod_glm_dummy)$deviance / summary(modelo_logit2)$null.deviance)
-
-df_r2 <- data.frame(
-  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
-  `R2 de McFadden` = c(r2_mcfadden_cloglog, r2_mcfadden_logit2, r2_mcfadden_glm_dummy),
-  check.names = FALSE
-)
-
-kable(df_r2, 
-      booktabs = TRUE, 
-      digits = 4,
-      caption = "Pseudo-R2 de McFadden para cada modelo ajustado")
-```
-
-No pseudo-$R^2$ temos mais uma vez uma diferença grande entre o complemento log-log e os logitos, enquanto os logitos, entre si, tem uma diferença marginal. Além disso, no geral podemos afirmar que para qualquer um dos modelos, temos valores ótimos de R², evidenciando a qualidade dos modelos.
-
-```{r}
-
-df_rmse <- data.frame(
-  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
-  RMSE = c(performance::rmse(mod_cloglog), performance::rmse(modelo_logit2), performance::rmse(mod_glm_dummy))
-)
-
-kable(df_rmse, 
-      booktabs = TRUE, 
-      digits = 4,
-      col.names = c("Modelo", "RMSE"),
-      caption = "Raiz do Erro Quadrático Médio (RMSE) dos modelos")
-```
-
-Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.
+## Funções de Ligação e Cálculo da $DE_{50}$
 
 Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.
 
@@ -272,12 +178,178 @@ Resolvendo, chegamos à conclusão que:
 
 $$\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}$$
 
-Mas note que, nos casos em que o logarítimo foi aplicado à dose, a \$DE\_{50}\$ deve ser convertido de volta à escala original usando `exp()` .
+Nos casos em que a transformação logarítmica foi aplicada à variável explicativa, o valor isolado deve ser convertido de volta à escala original usando a função exponencial. Para o modelo com função de ligação Logito e variável indicadora (Dummy), a análise concentra-se nas amostras submetidas à substáncia ativa($I_ {\text{controle}} = 0$). A função de ligação é reduzida a:
+
+$$\log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_2\log(\text{Dose}_{\text{ativa}})$$
+
+Substituindo a probabilidade $p$ por 0,5:
+
+$$\log\left(\frac{0,5}{0,5}\right) = \log(0) = 0$$
+
+$$0 = \beta_0 + \beta_2\log(\text{Dose}_{\text{ativa}})$$
+
+Isolando a dose de interesse e convertendo de volta à escala original via função exponencial, obtém-se:
+
+$$DE_{50} = \exp\left(-\frac{\beta_0}{\beta_2}\right)$$
+
+## Críterios de Seleção e Diagnóstico
+
+Iremos utilizar 4 critérios para selecionar o modelo ideal:\
+
+- Critério de Informação de Akaike (AIC): quanto menor, melhor;
+
+- Desvio (Deviance): quanto menor, melhor;
+
+- Pseudo-$R^2$ de McFadden: quanto maior, melhor;
+
+- Raiz do Erro Quadrático Médio (RMSE): quanto menor, melhor.
+
+Além destes, há também uma métrica que pode servir como critério, sendo ele a dose efetiva mediana (DE50), neste, iremos observar se o valor é condizente com o contexto, nesse caso, qualquer modelo que apresentar em seu intervalo de confiança valores negativos pode ser considerado inconsistente e descartado, a inconsistência vem de que não existe dose negativa, portanto valores negativos de dose efetiva mediana são inconsistentes.
+
+# Análise Descritiva
+
+Exploração visual inicial das variáveis explicativas e comportamento empírico da resposta.
 
 ```{r}
+#| warning: false
+#| echo: false
+
+ggplot(earthworms, aes(x = dose, y = number/total)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Proporção de Minhocas Retidas vs Dose da Substância Tóxica",
+    x = "Dose",
+    y = "Proporção Empírica (Ficaram/Total)"
+  ) +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red")
+
+```
+
+No gráfico podemos observar que na dose zero (controle) cerca da metadade das minhocas naturalmente permanece no recipiente. A queda abrupta com o aumento da dose comprova que uma simples transformação logarítmica direta da covariável é inadequada, reforçando a necessidade de isolar o grupo controle na modelagem.
+
+```{r}
+#| warning: false
+#| echo: false
+
+earthworms |> 
+  filter(dose > 0) |> 
+  ggplot(aes(x = log(dose), y = number/total)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "loess", se = FALSE, color = "red", linetype = "dashed") + 
+  theme_minimal() +
+  labs(
+    title = "Proporção de Retenção vs Logaritmo da Dose Ativa",
+    x = "Log(Dose) (Excluindo o Controle)",
+    y = "Proporção Empírica"
+  )
+```
+
+Excluindo-se o controle e plotando a resposta contra o logaritmo das doses ativas, observamos uma forma sigmoide descrescente. Esse padrão justifica o uso do logaritmo da dose como variável explicativa para as doses ativas.
+
+```{r}
+#| warning: false
+#| echo: false
+
+earthworms |> 
+  filter(dose > 0) |> 
+  mutate(elogit = log((number + 0.5) / (total - number + 0.5))) %>%
+  ggplot(aes(x = log(dose), y = elogit)) +
+  geom_point(color = "darkblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  theme_minimal() +
+  labs(
+    title = "Logitos Empíricos vs Log(Dose)",
+    x = "Log(Dose) (Excluindo o Controle)",
+    y = "Logito Empírico"
+  )
+```
+
+O uso de logitos empíricos plotados contra o logaritmo da dose mostra uma notável tendência linear. A obtenção dessa linearidade é o diagnóstico visual perfeito de que a função de ligação logistica (Logito) está corretamente especificada para a componente sistemática do modelo.
+
+# Ajuste e Diagnóstico do Modelo
+
+Com os modelos definidos, podemos seguir para a comparação e seleção deles.
+
+Iniciaremos pela comparação dos AICs:
+
+```{r}
+#| warning: false
+#| echo: false
+
+AIC(mod_cloglog, modelo_logit1, modelo_logit2, mod_logit, mod_glm_dummy)
+```
+
+Para o AIC percebe-se que o modelo logito padrão, complemento log-log e o modelo logito deslocado à 1 unidade apresentam os maiores AICs, o que não é ideal, já aqui pode-se descartar os modelos logito padrão e logito deslocado à 1 unidade, o modelo complemento log-log apesar de apresentar um AIC alto comparado aos outros não será descartado a fins de comparação de ligações posteriores.
+
+```{r}
+#| warning: false
+#| echo: false
+
+df_deviance <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  Desvio = c(deviance(mod_cloglog), deviance(modelo_logit2), deviance(mod_glm_dummy)))
+
+kableExtra::kable(df_deviance, 
+      booktabs = TRUE, 
+      digits = 4,
+      col.names = c("Modelo", "Desvio Residual"),
+      caption = "Comparação da Desvio Residual entre os modelos")
+```
+
+Para a comparação dos desvios dos modelos restantes percebe-se novamente que o modelo complemento log-log apresenta as piores métricas, tendo o maior desvio com uma diferença considerável, enquanto os modelos logito restantes tem uma diferença mínima entre eles.
+
+```{r}
+#| warning: false
+#| echo: false
+
+
+r2_mcfadden_cloglog <- 1 - (summary(mod_cloglog)$deviance / summary(mod_glm_dummy)$null.deviance)
+
+r2_mcfadden_logit2 <- 1 - (summary(modelo_logit2)$deviance / summary(modelo_logit2)$null.deviance)
+
+r2_mcfadden_glm_dummy <- 1 - (summary(mod_glm_dummy)$deviance / summary(modelo_logit2)$null.deviance)
+
+df_r2 <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  `R2 de McFadden` = c(r2_mcfadden_cloglog, r2_mcfadden_logit2, r2_mcfadden_glm_dummy),
+  check.names = FALSE
+)
+
+kable(df_r2, 
+      booktabs = TRUE, 
+      digits = 4,
+      caption = "Pseudo-R2 de McFadden para cada modelo ajustado")
+```
+
+No pseudo-$R^2$ temos mais uma vez uma diferença grande entre o complemento log-log e os logitos, enquanto os logitos, entre si, tem uma diferença marginal. Além disso, no geral podemos afirmar que para qualquer um dos modelos, temos valores ótimos de R², evidenciando a qualidade dos modelos.
+
+```{r}
+#| warning: false
+#| echo: false
+
+df_rmse <- data.frame(
+  Modelo = c("Complemento Log-Log", "Logito com log(dose + 0.1)", "Logito com dummy"),
+  RMSE = c(performance::rmse(mod_cloglog), performance::rmse(modelo_logit2), performance::rmse(mod_glm_dummy))
+)
+
+kable(df_rmse, 
+      booktabs = TRUE, 
+      digits = 4,
+      col.names = c("Modelo", "RMSE"),
+      caption = "Raiz do Erro Quadrático Médio (RMSE) dos modelos")
+```
+
+Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.
+
+
+```{r}
+#| warning: false
+#| echo: false
+
 # Métrica DE50
 
-## Mod_cloglog
+## modelo_cloglog
 
 res_cloglog <- MASS::dose.p(mod_cloglog, p = 0.5)
 de50_cloglog <- as.numeric(res_cloglog)
@@ -333,6 +405,9 @@ Entretanto, agora com todas as métricas de comparação apresentadas, iremos pr
 Com o modelo selecionado, iremos verificar a bondade do ajuste pelo desvio (Deviance Goodness-of-Fit), que compara o erro do modelo contra um modelo perfeito (saturado). Podemos tirar conclusão disso a partir de um p-valor, onde quanto maior esse p-valor, melhor está ajustado o modelo.
 
 ```{r}
+#| warning: false
+#| echo: false
+
 dev_residual <- deviance(mod_glm_dummy)
 graus_liberdade <- summary(mod_glm_dummy)$df.residual
 
@@ -350,6 +425,7 @@ Para confirmar que o nosso modelo está bem ajustado aos dados, iremos verificar
 ```{r}
 #| results: hide
 #| warning: false
+#| echo: false
 check_model(mod_glm_dummy, panel = FALSE) |> plot()
 ```
 
@@ -358,6 +434,8 @@ Com a análise apresentada, podemos confirmar que o modelo está ótimo. Na homo
 Para fins de maior confirmação, iremos checar a superdispersão dos dados, uma vez que caso haja, a análise de resíduos pode estar apontando falsos positivos.
 
 ```{r}
+#| warning: false
+#| echo: false
 performance::check_overdispersion(mod_glm_dummy)
 ```
 
@@ -368,6 +446,8 @@ Portanto, é confirmado que não há superdispersão dos dados e a análise de r
 Para confirmar que a inclusão da variável dummy é significativa ao modelo, iremos realizar uma ANOVA.
 
 ```{r}
+#| warning: false
+#| echo: false
 anova(mod_glm_dummy, test = "Chisq")
 ```
 
@@ -380,27 +460,45 @@ Com o modelo devidamente validado, podemos seguir para as interpretações de se
 É importante ressaltar que há uma variável dummy neste modelo, ela separa quando há dose no solo e quando não há dose no solo, dessa forma, as interpretações podem ser voltadas à presença da dose no solo.
 
 ```{r}
-broom::tidy(mod_glm_dummy, exponentiate = T)[,1:2]
+#| echo: false
+#| message: false
+library(knitr)
+library(broom)
+
+# Extrai os coeficientes exponenciados
+tabela_coef <- tidy(mod_glm_dummy, exponentiate = TRUE)[, 1:2]
+
+# Gera a tabela formatada
+kable(tabela_coef, 
+      col.names = c("Termo", "Estimativa (Razão de Chance)"),
+      digits = 4,
+      caption = "Estimativas dos Parâmetros do Modelo (Escala Exponencial)")
 ```
 
-Com os coeficientes, podemos interpretar que:
+Com base nos coeficientes, interpreta-se que:
 
-- Intercepto: Quando há uma dose no solo, pode-se afirmar que a chance de permanência da minhoca é de menos de 9%, indicando que mesmo em baixas doses, o efeito da dose no solo já é considerável;
+- **Intercepto**: A uma dose ativa de 1 unidade no solo ($\log(1) = 0$), a chance estimada de permanência da minhoca no recipiente contaminado é de 8,78%.
 
-- Controle: a chance de uma minhoca ficar no solo controle (sem dose) é 17,08 vezes maior do que a chance de ela ficar no solo com a dose de referência (dose = 1);
+- **Controle**: A chance de uma minhoca permanecer no solo controle (sem dose) é 17,08 vezes maior do que a chance de permanência no solo exposto à dose ativa de referência (1 unidade).
 
-- Dose ativa: cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.
-
-Podemos concluir, portanto, que a substância dosada no solo é efetiva no controle da permanência das minhocas no solo, até mesmo em baixas dosagens.
-
-Para concluir, vamos relembrar do \$DE\_{50}\$.
-
-```{r}
-cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n")
-```
-
-Com estes valores de \$DE\_{50}\$, podemos afirmar que a dosagem que separa metade das minhocas, isto é, metade das minhocas migram para solo que não está contaminado está, com 95% de confiança, entre 0,0883 e 0,2385.
+- **Dose ativa**: Cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.
 
 # Conclusão
 
+A substância toxicológica avaliada demonstra alta eficácia na indução do comportamento de fuga das minhocas, apresentando impacto significativo na redução da chance de permanência mesmo em baixas dosagens. A análise diagnóstica confirmou a adequação do Modelo Linear Generalizado com ligação logística e particionamento da dose via variável indicadora para a descrição deste fenômeno.
+
+A dose efetiva mediana ($DE_{50}$), métrica que estabelece a concentração exata necessária para forçar a migração de 50% da amostra exposta, foi estimada em 0,1451 unidades. Computando a variabilidade amostral, afirma-se, com 95% de confiança estatística, que o verdadeiro limite de tolerância populacional que divide o comportamento da espécie encontra-se no intervalo entre 0,0883 e 0,2385. Tais limites não negativos atestam a validade preditiva do modelo selecionado e fornecem um referencial quantitativo seguro para futuras intervenções ecotoxicológicas.
+
+\newpage
+
 # Referências
+
+**CEDERGREEN, N.; RITZ, C.** *earthworms: Earthworm toxicity test*. R package 'drc' documentation, versão 3.0-1. Disponível em: <https://www.rdocumentation.org/packages/drc/versions/3.0-1/topics/earthworms>.
+
+**DUNN, P. K.; SMYTH, G. K.** *Generalized Linear Models With Examples in R*. Springer Texts in Statistics. Nova York: Springer, 2018.
+
+**FARAWAY, J. J.** *Extending the Linear Model with R: Generalized Linear, Mixed Effects and Nonparametric Regression Models*. Boca Raton: Chapman & Hall/CRC, 2006.
+
+**HERMES, Prof.** *Modelos Lineares Generalizados*. Material de aula (Slides).
+
+**RITZ, C.; BATY, F.; STREIBIG, J. C.; GERHARD, D.** Dose-Response Analysis Using R. *PLoS ONE*, v. 10, n. 12, e0146021, 2015. DOI: 10.1371/journal.pone.0146021. Disponível em: <https://pmc.ncbi.nlm.nih.gov/articles/PMC4696819/>.
