@@ -253,8 +253,7 @@ window.Quarto = {
 </section>
 <section id="ajuste-e-diagnóstico-do-modelo" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Ajuste e Diagnóstico do Modelo</h1>
-<p><strong>Apresentação das estimativas, avaliação de qualidade global do ajuste, análise de resíduos (homocedasticidade, pontos influentes) e testes específicos para cada modelo.</strong></p>
-<p>Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-<span class="math inline">\(R^2\)</span> de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica DE50.</p>
+<p>Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-<span class="math inline">\(R^2\)</span> de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica dose efetiva mediana (DE50).</p>
 <p>Inicialmente, iremos ajustar os seguintes cinco modelos.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod_cloglog <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
@@ -284,7 +283,7 @@ window.Quarto = {
 </ul>
 <p>As variáveis resposta foram modificadas para o logarítmo da dose pois, na biologia, a resposta de um organismo à uma substância quase nunca é linear, o efeito costuma ser em magnetudes (escala logarítmica).</p>
 <p>Portanto, se for usado a dose normalmente, o modelo vai dar um peso maior para as doses mais altas, ignorando o que acontece nas doses mais baixas. O log resolve isso espalhando as doses menores e aproximando as maiores, sendo o ideal para o ajuste logistico.</p>
-<p>Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o <code>log(dose + 1)</code> e então para minimizar a contribuição da constante foi-se usado o <code>log(dose + 0.1)</code>, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a DE50.</p>
+<p>Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o <code>log(dose + 1)</code> e então para minimizar a contribuição da constante foi-se usado o <code>log(dose + 0.1)</code>, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).</p>
 <p>Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável <em>“dummy”,</em> isto é, a variável indica se o valor da dose é zero, se for, não aplica o logarítimo, se não for, aplica o logarítimo, ao mesmo tempo evitando que seja feito <code>log(0)</code> e aplicando o logarítimo importante para o modelo.</p>
 <p>Com os modelos definidos, podemos seguir para a comparação e seleção deles.</p>
 <section id="comparação-dos-modelos" class="level2" data-number="4.1">
@@ -429,12 +428,218 @@ mod_glm_dummy  3 78.33592</code></pre>
 </table>
 </div>
 </div>
-<p>Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos boas Raízes, mantendo seus valores bem baixos.</p>
+<p>Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.</p>
+<p>Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.</p>
+<p>A dose efetiva mediana (DE50) é a dose de uma substância que produz um efeito específico em exatamente 50% dos indivíduos testados. Para o nosso contexto, a DE50 é a dosagem exata do contaminante necessária para fazer com que 50% das minhocas migrem.</p>
+<p>A definição da DE50 difere para cada função de ligação do modelo. Como aqui estamos tratando modelos com ligação complemento log-log e logito, podemos definir a DE50 como, para o modelo com ligação complemento log-log:</p>
+<p>Seja a função de ligação complemento log-log expressa por:</p>
+<p><span class="math display">\[\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X\]</span></p>
+<p>Para definirmos a DE50, substitui-se a probabilidade $p$ por 0,5, tendo:</p>
+<p><span class="math display">\[log(-log(1 - 0.5)) = log(-log(0.5))\]</span></p>
+<p>Resolvendo, chegamos à conclusão que:</p>
+<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = - 0.3665\]</span></p>
+<p>Isolando o $X_{50}$ que representa a DE50, chegamos na conclusão que:</p>
+<p><span class="math display">\[DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}\]</span></p>
+<p>Já para o modelo com ligação logito, temos que:</p>
+<p>Seja a função de ligação logito expressa por:</p>
+<p><span class="math display">\[\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X\]</span></p>
+<p>Substituindo a probabilidade $p$ por 0,5, temos:</p>
+<p><span class="math display">\[log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0\]</span></p>
+<p>Resolvendo, chegamos à conclusão que:</p>
+<p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}\]</span></p>
+<p>Mas note que, nos casos em que o logarítimo foi aplicado à dose, a $DE_{50}$ deve ser convertido de volta à escala original usando <code>exp()</code> .</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Métrica DE50</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Mod_cloglog</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>res_cloglog <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(mod_cloglog, <span class="at">p =</span> <span class="fl">0.5</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>de50_cloglog <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_cloglog)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>se_cloglog <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_cloglog, <span class="st">"SE"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>ic_inf_cloglog <span class="ot">&lt;-</span> de50_cloglog <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_cloglog</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>ic_sup_cloglog <span class="ot">&lt;-</span> de50_cloglog <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_cloglog</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (cloglog):"</span>, de50_cloglog, <span class="st">"[95% IC:"</span>, ic_inf_cloglog, <span class="st">";"</span>, ic_sup_cloglog, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DE50 (cloglog): -0.1067457 [95% IC: -0.3984615 ; 0.1849701 ]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## modelo_logit2</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>res_logit2 <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(modelo_logit2, <span class="at">p =</span> <span class="fl">0.5</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>x50_logit2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_logit2)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>se_logit2  <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_logit2, <span class="st">"SE"</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>ic_inf_log2 <span class="ot">&lt;-</span> x50_logit2 <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_logit2</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>ic_sup_log2 <span class="ot">&lt;-</span> x50_logit2 <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_logit2</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># destransforma</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>de50_logit2   <span class="ot">&lt;-</span> <span class="fu">exp</span>(x50_logit2) <span class="sc">-</span> <span class="fl">0.1</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>ic_inf_logit2 <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_inf_log2) <span class="sc">-</span> <span class="fl">0.1</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>ic_sup_logit2 <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_sup_log2) <span class="sc">-</span> <span class="fl">0.1</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (logit2):"</span>, de50_logit2, <span class="st">"[95% IC:"</span>, ic_inf_logit2, <span class="st">";"</span>, ic_sup_logit2, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DE50 (logit2): 0.07321785 [95% IC: 0.01983951 ; 0.1503717 ]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## mod_glm_dummy</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cf = c(1, 3) pra tirar a variável dummy</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>res_dummy <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">dose.p</span>(mod_glm_dummy, <span class="at">cf =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="at">p =</span> <span class="fl">0.5</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>x50_dummy <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(res_dummy)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>se_dummy  <span class="ot">&lt;-</span> <span class="fu">attr</span>(res_dummy, <span class="st">"SE"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>ic_inf_log_d <span class="ot">&lt;-</span> x50_dummy <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se_dummy</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>ic_sup_log_d <span class="ot">&lt;-</span> x50_dummy <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se_dummy</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># destransforma</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>de50_dummy   <span class="ot">&lt;-</span> <span class="fu">exp</span>(x50_dummy)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>ic_inf_dummy <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_inf_log_d)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>ic_sup_dummy <span class="ot">&lt;-</span> <span class="fu">exp</span>(ic_sup_log_d)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (Dummy):"</span>, de50_dummy, <span class="st">"[95% IC:"</span>, ic_inf_dummy, <span class="st">";"</span>, ic_sup_dummy, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DE50 (Dummy): 0.1451175 [95% IC: 0.08828153 ; 0.2385447 ]</code></pre>
+</div>
+</div>
+<p>Agora analisando as estimativas, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.</p>
+<p>Além disso, os outros dois modelos resultaram em intervalos de confiança consistentes (tudo positivo), portanto, podem ser considerados como válidos.</p>
+<p>Entretanto, agora com todas as métricas de comparação apresentadas, iremos prosseguir apenas com o modelo que mais se destacou, isso é, o modelo que apresentou as melhores métricas, mas não só isso, melhor interpretabilidade, portanto, o modelo escolhido será o Modelo Linear Generalizado Binomial com Função de Ligação Logito e Variável Dummy. Pois esse modelo não só apresentou as melhores métricas, como também deve apresentar interpretações bem mais fáceis de se fazer, uma vez que a sua variável explicativa não houve deslocamento como o outro modelo.</p>
+</section>
+<section id="qualidade-de-ajuste" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="qualidade-de-ajuste"><span class="header-section-number">4.2</span> Qualidade de Ajuste</h2>
+<p>Com o modelo selecionado, iremos verificar a bondade do ajuste pelo desvio (Deviance Goodness-of-Fit), que compara o erro do modelo contra um modelo perfeito (saturado). Podemos tirar conclusão disso a partir de um p-valor, onde quanto maior esse p-valor, melhor está ajustado o modelo.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dev_residual <span class="ot">&lt;-</span> <span class="fu">deviance</span>(mod_glm_dummy)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>graus_liberdade <span class="ot">&lt;-</span> <span class="fu">summary</span>(mod_glm_dummy)<span class="sc">$</span>df.residual</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calcular o p-valor do teste</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>p_valor_ajuste <span class="ot">&lt;-</span> <span class="fu">pchisq</span>(dev_residual, graus_liberdade, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"P-valor da Bondade de Ajuste (Desvio):"</span>, p_valor_ajuste, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>P-valor da Bondade de Ajuste (Desvio): 0.6422658 </code></pre>
+</div>
+</div>
+<p>O p-valor resultante é bem alto, confirmando assim que o modelo está bem ajustado aos dados.</p>
+</section>
+<section id="análise-de-resíduos" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="análise-de-resíduos"><span class="header-section-number">4.3</span> Análise de Resíduos</h2>
+<p>Para confirmar que o nosso modelo está bem ajustado aos dados, iremos verificar os pressupostos de homogeneiedade, pontos influentes, colinearidade e distribuição dos resíduos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_model</span>(mod_glm_dummy, <span class="at">panel =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-12-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-12-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="dose_resposta_files/figure-html/unnamed-chunk-12-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Com a análise apresentada, podemos confirmar que o modelo está ótimo. Na homogeneidade está de acordo com o padrão para modelos binomiais, não há pontos influentes, não há colinearidade e os resíduos seguem a distribuição de referência.</p>
+<p>Para fins de maior confirmação, iremos checar a superdispersão dos dados, uma vez que caso haja, a análise de resíduos pode estar apontando falsos positivos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>performance<span class="sc">::</span><span class="fu">check_overdispersion</span>(mod_glm_dummy)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Overdispersion test
+
+ dispersion ratio = 0.977
+          p-value = 0.968</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>No overdispersion detected.</code></pre>
+</div>
+</div>
+<p>Portanto, é confirmado que não há superdispersão dos dados e a análise de resíduos é válida.</p>
+</section>
+<section id="variáveis-significativas" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="variáveis-significativas"><span class="header-section-number">4.4</span> Variáveis significativas</h2>
+<p>Para confirmar que a inclusão da variável dummy é significativa ao modelo, iremos realizar uma ANOVA.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(mod_glm_dummy, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Deviance Table
+
+Model: binomial, link: logit
+
+Response: cbind(number, total - number)
+
+Terms added sequentially (first to last)
+
+         Df Deviance Resid. Df Resid. Dev  Pr(&gt;Chi)    
+NULL                        34     97.252              
+controle  1   28.247        33     69.005 1.068e-07 ***
+log_dose  1   40.462        32     28.543 2.005e-10 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Confirmamos assim que todas as variáveis são significativas para o modelo, permitindo que continuemos com esse modelo da forma que está.</p>
 </section>
 </section>
 <section id="interpretação-estatística-e-conclusão" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Interpretação Estatística e Conclusão</h1>
-<p><strong>Leitura interpretativa dos coeficientes na escala prática do problema (razões de taxas, percentuais, curvas de resposta) e considerações finais sobre o fenômeno estudado.</strong></p>
+<p>Com o modelo devidamente validado, podemos seguir para as interpretações de seus coeficientes e métricas.</p>
+<p>É importante ressaltar que há uma variável dummy neste modelo, ela separa quando há dose no solo e quando não há dose no solo, dessa forma, as interpretações podem ser voltadas à presença da dose no solo.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(mod_glm_dummy, <span class="at">exponentiate =</span> T)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  term        estimate
+  &lt;chr&gt;          &lt;dbl&gt;
+1 (Intercept)   0.0878
+2 controle     17.1   
+3 log_dose      0.284 </code></pre>
+</div>
+</div>
+<p>Com os coeficientes, podemos interpretar que:</p>
+<ul>
+<li><p>Intercepto: Quando há uma dose no solo, pode-se afirmar que a chance de permanência da minhoca é de menos de 9%, indicando que mesmo em baixas doses, o efeito da dose no solo já é considerável;</p></li>
+<li><p>Controle: a chance de uma minhoca ficar no solo controle (sem dose) é 17,08 vezes maior do que a chance de ela ficar no solo com a dose de referência (dose = 1);</p></li>
+<li><p>Dose ativa: cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.</p></li>
+</ul>
+<p>Podemos concluir, portanto, que a substância dosada no solo é efetiva no controle da permanência das minhocas no solo, até mesmo em baixas dosagens.</p>
+<p>Para concluir, vamos relembrar do $DE_{50}$.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"DE50 (Dummy):"</span>, de50_dummy, <span class="st">"[95% IC:"</span>, ic_inf_dummy, <span class="st">";"</span>, ic_sup_dummy, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>DE50 (Dummy): 0.1451175 [95% IC: 0.08828153 ; 0.2385447 ]</code></pre>
+</div>
+</div>
+<p>Com estes valores de $DE_{50}$, podemos afirmar que a dosagem que separa metade das minhocas, isto é, metade das minhocas migram para solo que não está contaminado está, com 95% de confiança, entre 0,0883 e 0,2385.</p>
+</section>
+<section id="conclusão" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusão</h1>
+</section>
+<section id="referências" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Referências</h1>
 </section>
 
 </main>

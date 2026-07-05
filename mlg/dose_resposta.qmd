@@ -117,9 +117,7 @@ O uso de logitos empíricos platados contra o logaritmo da dose mostra uma notá
 
 # Ajuste e Diagnóstico do Modelo
 
-**Apresentação das estimativas, avaliação de qualidade global do ajuste, análise de resíduos (homocedasticidade, pontos influentes) e testes específicos para cada modelo.**
-
-Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-$R^2$ de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica DE50.
+Para a seleção dos modelos, será apresentado o processo de ajuste, seleção e validação dos Modelos Lineares Generalizados (MLG) aplicados aos dados de dose-resposta com minhocas. Primeiramente, serão ajustados e comparados diferentes modelos, abordando as funções de ligação logito e complemento log-log (cloglog), e devido à natureza dos dados, algumas alterações nestes modelos para validade matemática. Essa escolha e comparação dos modelos tem como base critérios de qualidade global e ajuste, especificamente o Critério de Informação de Akaike (AIC), o Desvio (Deviance), o Pseudo-$R^2$ de McFadden, a Raiz do Erro Quadrático Médio (RMSE) e a métrica dose efetiva mediana (DE50).
 
 Inicialmente, iremos ajustar os seguintes cinco modelos.
 
@@ -144,7 +142,7 @@ mod_glm_dummy <- glm(cbind(number, total - number) ~ controle + log_dose,
 
 Que são, respectivamente:
 
--  Modelo Linear Generalizado Binomial com Ligação Complemento Log-Log;
+- Modelo Linear Generalizado Binomial com Ligação Complemento Log-Log;
 
 - Modelo Linear Generalizado Binomial com Ligação Logito e variável resposta modificada (log + 1);
 
@@ -158,7 +156,7 @@ As variáveis resposta foram modificadas para o logarítmo da dose pois, na biol
 
 Portanto, se for usado a dose normalmente, o modelo vai dar um peso maior para as doses mais altas, ignorando o que acontece nas doses mais baixas. O log resolve isso espalhando as doses menores e aproximando as maiores, sendo o ideal para o ajuste logistico.
 
-Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o `log(dose + 1)` e então para minimizar a contribuição da constante foi-se usado o `log(dose + 0.1)`, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a DE50.
+Entretanto, apenas aplicar o logarítimo não seria o suficiente pois, nesta variável explicativa, há a presença de zeros, para contornar isso, foi-se adicionado uma constante ao valor da variável, para um caso foi usado o `log(dose + 1)` e então para minimizar a contribuição da constante foi-se usado o `log(dose + 0.1)`, entretanto, essa abordagem gera uma distorção na escala das doses, afetando possíveis estimativas e o cálculo de métricas como a dose efetiva mediana (DE50).
 
 Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável *"dummy",* isto é, a variável indica se o valor da dose é zero, se for, não aplica o logarítimo, se não for, aplica o logarítimo, ao mesmo tempo evitando que seja feito `log(0)` e aplicando o logarítimo importante para o modelo.
 
@@ -236,8 +234,173 @@ kable(df_rmse,
       caption = "Raiz do Erro Quadrático Médio (RMSE) dos modelos")
 ```
 
-Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos boas Raízes, mantendo seus valores bem baixos.
+Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.
+
+Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.
+
+A dose efetiva mediana (DE50) é a dose de uma substância que produz um efeito específico em exatamente 50% dos indivíduos testados. Para o nosso contexto, a DE50 é a dosagem exata do contaminante necessária para fazer com que 50% das minhocas migrem.
+
+A definição da DE50 difere para cada função de ligação do modelo. Como aqui estamos tratando modelos com ligação complemento log-log e logito, podemos definir a DE50 como, para o modelo com ligação complemento log-log:
+
+Seja a função de ligação complemento log-log expressa por:
+
+$$\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X$$
+
+Para definirmos a DE50, substitui-se a probabilidade \$p\$ por 0,5, tendo:
+
+$$log(-log(1 - 0.5)) = log(-log(0.5))$$
+
+Resolvendo, chegamos à conclusão que:
+
+$$\beta_0 + \beta_1 \cdot X_{50} = - 0.3665$$
+
+Isolando o \$X\_{50}\$ que representa a DE50, chegamos na conclusão que:
+
+$$DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}$$
+
+Já para o modelo com ligação logito, temos que:
+
+Seja a função de ligação logito expressa por:
+
+$$\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X$$
+
+Substituindo a probabilidade \$p\$ por 0,5, temos:
+
+$$log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0$$
+
+Resolvendo, chegamos à conclusão que:
+
+$$\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}$$
+
+Mas note que, nos casos em que o logarítimo foi aplicado à dose, a \$DE\_{50}\$ deve ser convertido de volta à escala original usando `exp()` .
+
+```{r}
+# Métrica DE50
+
+## Mod_cloglog
+
+res_cloglog <- MASS::dose.p(mod_cloglog, p = 0.5)
+de50_cloglog <- as.numeric(res_cloglog)
+
+se_cloglog <- attr(res_cloglog, "SE")
+ic_inf_cloglog <- de50_cloglog - 1.96 * se_cloglog
+ic_sup_cloglog <- de50_cloglog + 1.96 * se_cloglog
+
+cat("DE50 (cloglog):", de50_cloglog, "[95% IC:", ic_inf_cloglog, ";", ic_sup_cloglog, "]\n")
+
+## modelo_logit2
+
+res_logit2 <- MASS::dose.p(modelo_logit2, p = 0.5)
+x50_logit2 <- as.numeric(res_logit2)
+se_logit2  <- attr(res_logit2, "SE")
+
+ic_inf_log2 <- x50_logit2 - 1.96 * se_logit2
+ic_sup_log2 <- x50_logit2 + 1.96 * se_logit2
+
+# destransforma
+de50_logit2   <- exp(x50_logit2) - 0.1
+ic_inf_logit2 <- exp(ic_inf_log2) - 0.1
+ic_sup_logit2 <- exp(ic_sup_log2) - 0.1
+
+cat("DE50 (logit2):", de50_logit2, "[95% IC:", ic_inf_logit2, ";", ic_sup_logit2, "]\n")
+
+## mod_glm_dummy
+
+# cf = c(1, 3) pra tirar a variável dummy
+res_dummy <- MASS::dose.p(mod_glm_dummy, cf = c(1, 3), p = 0.5)
+x50_dummy <- as.numeric(res_dummy)
+se_dummy  <- attr(res_dummy, "SE")
+
+ic_inf_log_d <- x50_dummy - 1.96 * se_dummy
+ic_sup_log_d <- x50_dummy + 1.96 * se_dummy
+
+# destransforma
+de50_dummy   <- exp(x50_dummy)
+ic_inf_dummy <- exp(ic_inf_log_d)
+ic_sup_dummy <- exp(ic_sup_log_d)
+
+cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n")
+```
+
+Agora analisando as estimativas, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.
+
+Além disso, os outros dois modelos resultaram em intervalos de confiança consistentes (tudo positivo), portanto, podem ser considerados como válidos.
+
+Entretanto, agora com todas as métricas de comparação apresentadas, iremos prosseguir apenas com o modelo que mais se destacou, isso é, o modelo que apresentou as melhores métricas, mas não só isso, melhor interpretabilidade, portanto, o modelo escolhido será o Modelo Linear Generalizado Binomial com Função de Ligação Logito e Variável Dummy. Pois esse modelo não só apresentou as melhores métricas, como também deve apresentar interpretações bem mais fáceis de se fazer, uma vez que a sua variável explicativa não houve deslocamento como o outro modelo.
+
+## Qualidade de Ajuste
+
+Com o modelo selecionado, iremos verificar a bondade do ajuste pelo desvio (Deviance Goodness-of-Fit), que compara o erro do modelo contra um modelo perfeito (saturado). Podemos tirar conclusão disso a partir de um p-valor, onde quanto maior esse p-valor, melhor está ajustado o modelo.
+
+```{r}
+dev_residual <- deviance(mod_glm_dummy)
+graus_liberdade <- summary(mod_glm_dummy)$df.residual
+
+# Calcular o p-valor do teste
+p_valor_ajuste <- pchisq(dev_residual, graus_liberdade, lower.tail = FALSE)
+cat("P-valor da Bondade de Ajuste (Desvio):", p_valor_ajuste, "\n")
+```
+
+O p-valor resultante é bem alto, confirmando assim que o modelo está bem ajustado aos dados.
+
+## Análise de Resíduos
+
+Para confirmar que o nosso modelo está bem ajustado aos dados, iremos verificar os pressupostos de homogeneiedade, pontos influentes, colinearidade e distribuição dos resíduos.
+
+```{r}
+#| results: hide
+#| warning: false
+check_model(mod_glm_dummy, panel = FALSE) |> plot()
+```
+
+Com a análise apresentada, podemos confirmar que o modelo está ótimo. Na homogeneidade está de acordo com o padrão para modelos binomiais, não há pontos influentes, não há colinearidade e os resíduos seguem a distribuição de referência.
+
+Para fins de maior confirmação, iremos checar a superdispersão dos dados, uma vez que caso haja, a análise de resíduos pode estar apontando falsos positivos.
+
+```{r}
+performance::check_overdispersion(mod_glm_dummy)
+```
+
+Portanto, é confirmado que não há superdispersão dos dados e a análise de resíduos é válida.
+
+## Variáveis significativas
+
+Para confirmar que a inclusão da variável dummy é significativa ao modelo, iremos realizar uma ANOVA.
+
+```{r}
+anova(mod_glm_dummy, test = "Chisq")
+```
+
+Confirmamos assim que todas as variáveis são significativas para o modelo, permitindo que continuemos com esse modelo da forma que está.
 
 # Interpretação Estatística e Conclusão
 
-**Leitura interpretativa dos coeficientes na escala prática do problema (razões de taxas, percentuais, curvas de resposta) e considerações finais sobre o fenômeno estudado.**
+Com o modelo devidamente validado, podemos seguir para as interpretações de seus coeficientes e métricas.
+
+É importante ressaltar que há uma variável dummy neste modelo, ela separa quando há dose no solo e quando não há dose no solo, dessa forma, as interpretações podem ser voltadas à presença da dose no solo.
+
+```{r}
+broom::tidy(mod_glm_dummy, exponentiate = T)[,1:2]
+```
+
+Com os coeficientes, podemos interpretar que:
+
+- Intercepto: Quando há uma dose no solo, pode-se afirmar que a chance de permanência da minhoca é de menos de 9%, indicando que mesmo em baixas doses, o efeito da dose no solo já é considerável;
+
+- Controle: a chance de uma minhoca ficar no solo controle (sem dose) é 17,08 vezes maior do que a chance de ela ficar no solo com a dose de referência (dose = 1);
+
+- Dose ativa: cada acréscimo em uma unidade no log da dose diminui a chance da minhoca ficar no solo em 71,64%.
+
+Podemos concluir, portanto, que a substância dosada no solo é efetiva no controle da permanência das minhocas no solo, até mesmo em baixas dosagens.
+
+Para concluir, vamos relembrar do \$DE\_{50}\$.
+
+```{r}
+cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n")
+```
+
+Com estes valores de \$DE\_{50}\$, podemos afirmar que a dosagem que separa metade das minhocas, isto é, metade das minhocas migram para solo que não está contaminado está, com 95% de confiança, entre 0,0883 e 0,2385.
+
+# Conclusão
+
+# Referências
