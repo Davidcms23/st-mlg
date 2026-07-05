@@ -152,7 +152,7 @@ Seja a função de ligação complemento log-log expressa por:
 
 $$\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X$$
 
-Para definirmos a DE50, substitui-se a probabilidade \$p\$ por 0,5, tendo:
+Para definirmos a DE50, substitui-se a probabilidade $p$ por 0,5, tendo:
 
 $$log(-log(1 - 0.5)) = log(-log(0.5))$$
 
@@ -160,7 +160,7 @@ Resolvendo, chegamos à conclusão que:
 
 $$\beta_0 + \beta_1 \cdot X_{50} = - 0.3665$$
 
-Isolando o \$X\_{50}\$ que representa a DE50, chegamos na conclusão que:
+Isolando o $X_{50}$ que representa a DE50, chegamos na conclusão que:
 
 $$DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}$$
 

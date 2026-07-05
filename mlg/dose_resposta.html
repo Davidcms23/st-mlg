@@ -264,11 +264,11 @@ window.Quarto = {
 <p>A definição da DE50 difere para cada função de ligação do modelo. Como aqui estamos tratando modelos com ligação complemento log-log e logito, podemos definir a DE50 como, para o modelo com ligação complemento log-log:</p>
 <p>Seja a função de ligação complemento log-log expressa por:</p>
 <p><span class="math display">\[\text{cloglog}(p) = log(-log(1 - p)) = \beta_0 + \beta_1 \cdot X\]</span></p>
-<p>Para definirmos a DE50, substitui-se a probabilidade $p$ por 0,5, tendo:</p>
+<p>Para definirmos a DE50, substitui-se a probabilidade <span class="math inline">\(p\)</span> por 0,5, tendo:</p>
 <p><span class="math display">\[log(-log(1 - 0.5)) = log(-log(0.5))\]</span></p>
 <p>Resolvendo, chegamos à conclusão que:</p>
 <p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = - 0.3665\]</span></p>
-<p>Isolando o $X_{50}$ que representa a DE50, chegamos na conclusão que:</p>
+<p>Isolando o <span class="math inline">\(X_{50}\)</span> que representa a DE50, chegamos na conclusão que:</p>
 <p><span class="math display">\[DE_{50} = X_{50} = {-0.3665 - \beta_0 \over \beta_1}\]</span></p>
 <p>Já para o modelo com ligação logito, temos que:</p>
 <p>Seja a função de ligação logito expressa por:</p>
