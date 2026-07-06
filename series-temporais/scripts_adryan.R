@@ -98,6 +98,12 @@ summary(
   )
 )
 
+summary(
+  ur.kpss(
+    diff(dados$n, lag = 12) # Passa
+  )
+)
+
 adf.test(
   diff(dados$n, lag = 1) # Passa
 )
@@ -110,5 +116,84 @@ dados |>
   gg_tsdisplay(
     difference(n, 1) |> difference(12), 
     plot_type = "partial",
-    lag_max = 26
+    lag_max = 36
   )
+
+auto.arima(dados) # (1,1,1)(2, 0, 0)
+auto.arima(dados |> mutate(n = difference(difference(n, 1), 12)))
+
+modelos_arima_todos <- treinamento |> 
+  model(
+    airline   = ARIMA(n ~ pdq(0,1,1) + PDQ(0,1,1)),
+    airlinear = ARIMA(n ~ pdq(0,1,1) + PDQ(1,1,1)),
+    auto1 = ARIMA(n ~ pdq(1, 1, 1) + PDQ(2, 0, 0)),
+    auto2 = ARIMA(n),
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
+    best2 = ARIMA(n ~ 0 + pdq(2, 0, 2) + PDQ(2, 1, 2,)),
+    best = ARIMA(n ~ 0 + pdq(2, 0, 1) + PDQ(2, 1, 2,)),
+    best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
+  )
+
+modelos_arima_todos |> report() |> arrange(AICc)
+modelos_arima_todos |> select(auto2) # (0, 1, 2)(1, 0, 0)
+
+fc_arimas_todos <- modelos_arima_todos |> 
+  forecast(h = "2 years")
+
+accuracy(fc_arimas_todos, dados) |> arrange(RMSE)
+
+modelos_reduzidos <- treinamento |> 
+  model(
+    airline   = ARIMA(n ~ pdq(0,1,1) + PDQ(0,1,1)),
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
+    arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1))
+  )
+
+fc_arimas <- modelos_reduzidos |> 
+  forecast(h = "2 years")
+
+accuracy(fc_arimas, dados) |> arrange(RMSE) # Melhor é o arima1
+
+modelos_reduzidos |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36))
+
+autoplot(dados)
+
+modelos_reduzidos |> 
+  select(arima1) |> 
+  gg_tsresiduals()
+
+modelos_reduzidos |> 
+  select(airline) |> 
+  gg_tsresiduals()
+
+modelos_reduzidos |> augment() |> 
+  filter(.model == "airline") |> 
+  features(.innov, ljung_box, lag = 24, dof = 2)
+
+modelos_reduzidos |> augment() |>
+  filter(.model == "arima1") |> 
+  features(.innov, ljung_box, lag = 24, dof = 5)
+
+melhor_modelo <- modelos_reduzidos |> select(arima1)
+shapiro.test((melhor_modelo |> augment())$.innov)
+
+melhor_modelo |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36))
+
+melhor_modelo |> 
+  forecast(h = "4 years") |> 
+  autoplot(dados)
+
+melhor_modelo_geral <- dados |> 
+  model(
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1))
+  )
+
+melhor_modelo_geral |> 
+  forecast(h = "4 years") |> 
+  autoplot(dados)
