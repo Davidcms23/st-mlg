@@ -50,3 +50,20 @@ earthworms |>
     x = "Log(Dose) (Excluindo o Controle)",
     y = "Logito Empírico"
   )
+
+mod_probit_dummy <- glm(cbind(number, total - number) ~ controle + log_dose,
+                        data = dados,
+                        family = binomial(link = "probit"))
+
+
+
+
+
+
+
+
+
+
+
+
+
