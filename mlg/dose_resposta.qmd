@@ -61,7 +61,7 @@ dados <- earthworms
 
 # Introdução
 
-A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as microcas, quando expostas a solos contaminados.
+A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as minhocas, quando expostas a solos contaminados.
 
 ## Descrição e Origem do Conjunto de Dados
 
@@ -82,10 +82,10 @@ Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustada
 - **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$
 - **Complemento Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
 
-Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que $\log(0)$ é indefinido. O comportamento natural sem toxina resulta em uma divisão aproximada da amostra entre os recipientes, inviabilizando o ajuste de uma regressão ordinária a $\log(Dose)$. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:
+Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que $\log(0)$ é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a $p=0,5$. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de $\log(Dose)$. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:
 
- - **Deslocamento escalar**: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dado, testando os preditores $\log(Dose + 1)$ e $\log(Dose + 0,1)$.
- - **Variável indicadora (Dummy)**: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:
+- **Deslocamento escalar**: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores $\log(Dose + 1)$ e $\log(Dose + 0,1)$.
+- **Variável indicadora (Dummy)**: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:
 
 $$ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})$$
 
@@ -103,7 +103,6 @@ mod_cloglog <- glm(cbind(number, total - number) ~ dose,
 
 modelo_logit1 <- glm(cbind(number, total - number) ~ log(dose + 1),
                      data = earthworms, family = binomial(link = "logit"))
-
 
 modelo_logit2 <- glm(cbind(number, total - number) ~ log(dose + 0.1),
                      data = earthworms, family = binomial(link = "logit"))
@@ -139,7 +138,6 @@ Entretanto, apenas aplicar o logaritmo não seria o suficiente pois, nesta vari�
 
 Dessa forma, também para contornar este problema foi-se ajustado um modelo com a adição de uma variável *"dummy",* isto é, a variável indica se o valor da dose é zero, se for, não aplica o logaritmo, se não for, aplica o logaritmo, ao mesmo tempo evitando que seja feito `log(0)` e aplicando o logaritmo importante para o modelo.
 
-
 ## Funções de Ligação e Cálculo da $DE_{50}$
 
 Agora iremos fazer uma análise da métrica DE50 e seus intervalos de confiança.
@@ -170,7 +168,7 @@ Seja a função de ligação logito expressa por:
 
 $$\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X$$
 
-Substituindo a probabilidade \$p\$ por 0,5, temos:
+Substituindo a probabilidade $p$ por 0,5, temos:
 
 $$log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0$$
 
@@ -342,7 +340,6 @@ kable(df_rmse,
 
 Já na Raiz do Erro Quadrático Médio (RMSE) temos diferenças marginais entre os modelos, no geral temos bons erros, isto é, mantendo seus valores bem baixos.
 
-
 ```{r}
 #| warning: false
 #| echo: false
@@ -394,7 +391,7 @@ ic_sup_dummy <- exp(ic_sup_log_d)
 cat("DE50 (Dummy):", de50_dummy, "[95% IC:", ic_inf_dummy, ";", ic_sup_dummy, "]\n")
 ```
 
-Agora analisando as estimativas, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.
+Agora analisando as estimativas do $DE_{50}$, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.
 
 Além disso, os outros dois modelos resultaram em intervalos de confiança consistentes (tudo positivo), portanto, podem ser considerados como válidos.
 

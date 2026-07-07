@@ -192,7 +192,7 @@ window.Quarto = {
 <div style="page-break-after: always;"></div>
 <section id="introdução" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introdução</h1>
-<p>A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as microcas, quando expostas a solos contaminados.</p>
+<p>A ecotoxicologia depende fortemente de ensaios de dose e resposta para compreender o impacto de substâncias químicas em organismos vivos. Nesses experimentos, busca-se quantificar como a variação na dose (ou concentração) de um estressor químico influencia uma resposta biológica de interesse. Um indicador comportamental comum para avaliar o estresse ambiental em ecossistemas terrestres é a taxa de migração ou fuga de espécies bioindicadoras, como as minhocas, quando expostas a solos contaminados.</p>
 <section id="descrição-e-origem-do-conjunto-de-dados" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="descrição-e-origem-do-conjunto-de-dados"><span class="header-section-number">1.1</span> Descrição e Origem do Conjunto de Dados</h2>
 <p>Este trabalho utiliza o conjunto de dados empíricos <code>earthworms</code>, disponibilizado no pacote <code>drc</code> do ambiente computacional R. Os dados originalmente fornecidos por <strong>Nina Cedergree</strong> (Universidade de Copenhague), consistem em 35 observações provenientes de um teste de toxicidade. O experimento documenta o número de minhocas que permaneceram em um recipiente contaminado com doses variadas de uma substância tóxica não revelada, ou seja, a quantidade de indivíduos que falhou em migrar para um recipiente vizinho limpo e não contaminado.</p>
@@ -212,9 +212,9 @@ window.Quarto = {
 <li><strong>Logito</strong>: <span class="math inline">\(\eta_i = \log\left(\frac{p_i}{1-p_i}\right)\)</span></li>
 <li><strong>Complemento Log-Log (Cloglog)</strong>: <span class="math inline">\(\eta_i = \log(-\log(1 - p_i))\)</span></li>
 </ul>
-<p>Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que <span class="math inline">\(\log(0)\)</span> é indefinido. O comportamento natural sem toxina resulta em uma divisão aproximada da amostra entre os recipientes, inviabilizando o ajuste de uma regressão ordinária a <span class="math inline">\(\log(Dose)\)</span>. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:</p>
+<p>Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que <span class="math inline">\(\log(0)\)</span> é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a <span class="math inline">\(p=0,5\)</span>. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de <span class="math inline">\(\log(Dose)\)</span>. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:</p>
 <ul>
-<li><strong>Deslocamento escalar</strong>: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dado, testando os preditores <span class="math inline">\(\log(Dose + 1)\)</span> e <span class="math inline">\(\log(Dose + 0,1)\)</span>.</li>
+<li><strong>Deslocamento escalar</strong>: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores <span class="math inline">\(\log(Dose + 1)\)</span> e <span class="math inline">\(\log(Dose + 0,1)\)</span>.</li>
 <li><strong>Variável indicadora (Dummy)</strong>: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:</li>
 </ul>
 <p><span class="math display">\[ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})\]</span></p>
@@ -231,18 +231,17 @@ window.Quarto = {
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>modelo_logit1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="dv">1</span>),</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>modelo_logit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="fl">0.1</span>),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>mod_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> earthworms)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>controle <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>log_dose <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="fu">log</span>(dados<span class="sc">$</span>dose), <span class="dv">0</span>) </span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>mod_glm_dummy <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> controle <span class="sc">+</span> log_dose, </span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> dados, </span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>modelo_logit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> <span class="fu">log</span>(dose <span class="sc">+</span> <span class="fl">0.1</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> earthworms, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>mod_logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> dose,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> earthworms)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>controle <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>dados<span class="sc">$</span>log_dose <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(dados<span class="sc">$</span>dose <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="fu">log</span>(dados<span class="sc">$</span>dose), <span class="dv">0</span>) </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>mod_glm_dummy <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">cbind</span>(number, total <span class="sc">-</span> number) <span class="sc">~</span> controle <span class="sc">+</span> log_dose, </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> dados, </span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>))</span></code></pre></div><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Que são, respectivamente:</p>
 <ul>
@@ -273,7 +272,7 @@ window.Quarto = {
 <p>Já para o modelo com ligação logito, temos que:</p>
 <p>Seja a função de ligação logito expressa por:</p>
 <p><span class="math display">\[\text{logit}(p) = log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 \cdot X\]</span></p>
-<p>Substituindo a probabilidade $p$ por 0,5, temos:</p>
+<p>Substituindo a probabilidade <span class="math inline">\(p\)</span> por 0,5, temos:</p>
 <p><span class="math display">\[log\left(\frac{0.5}{1-0.5}\right) = log(1) = 0\]</span></p>
 <p>Resolvendo, chegamos à conclusão que:</p>
 <p><span class="math display">\[\beta_0 + \beta_1 \cdot X_{50} = 0 \Rightarrow DE_{50} = X_{50} = -\frac{\beta_0}{\beta_1}\]</span></p>
@@ -442,7 +441,7 @@ mod_glm_dummy  3 78.33592</code></pre>
 <pre><code>DE50 (Dummy): 0.1451175 [95% IC: 0.08828153 ; 0.2385447 ]</code></pre>
 </div>
 </div>
-<p>Agora analisando as estimativas, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.</p>
+<p>Agora analisando as estimativas do <span class="math inline">\(DE_{50}\)</span>, a primeira coisa que pode-se notar é que o modelo com função de ligação complemento log-log resultou em estimativas negativas (tanto a pontual quanto no intervalo de confiança), o que é inconsistente, uma vez que afirma que a dose que afeta exatamente metade dos indivíduos seria uma dose negativa, o que não existe. Permitindo assim que o modelo seja considerado inconsistente e propriamente descartado.</p>
 <p>Além disso, os outros dois modelos resultaram em intervalos de confiança consistentes (tudo positivo), portanto, podem ser considerados como válidos.</p>
 <p>Entretanto, agora com todas as métricas de comparação apresentadas, iremos prosseguir apenas com o modelo que mais se destacou, isso é, o modelo que apresentou as melhores métricas, mas não só isso, melhor interpretabilidade, portanto, o modelo escolhido será o Modelo Linear Generalizado Binomial com Função de Ligação Logito e Variável Dummy. Pois esse modelo não só apresentou as melhores métricas, como também deve apresentar interpretações bem mais fáceis de se fazer, uma vez que a sua variável explicativa não houve deslocamento como o outro modelo.</p>
 <section id="qualidade-de-ajuste" class="level2" data-number="4.1">
