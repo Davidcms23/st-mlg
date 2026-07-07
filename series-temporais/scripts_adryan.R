@@ -136,12 +136,13 @@ modelos_arima_todos <- treinamento |>
   )
 
 modelos_arima_todos |> report() |> arrange(AICc)
+# ATENÇÃO: A gente tem que usar o RMSE para comparar modelos com quantidade de diferenças diferentes. Por exemplo: (1, 0, 1)(1, 1, 1) e (1, 1, 1)(1, 1, 1)
 modelos_arima_todos |> select(auto2) # (0, 1, 2)(1, 0, 0)
 
 fc_arimas_todos <- modelos_arima_todos |> 
   forecast(h = "2 years")
 
-accuracy(fc_arimas_todos, dados) |> arrange(RMSE)
+accuracy(fc_arimas_todos, dados) |> arrange(RMSE) # esse modelo faz total sentido quando a gente observa o PACF e o ACF, a professora vai querer que a gente tente justificar ele por meio da interpretação dos gráfico. Então, ta ótimo.
 
 modelos_reduzidos <- treinamento |> 
   model(
