@@ -3,6 +3,12 @@
 rm(list = ls()); gc(full = TRUE)
 library(tidyverse); library(fpp3); library(fpp2); library(urca); library(tseries)
 
+library(conflicted)
+conflicts_prefer(dplyr::select)
+conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::lag)
+conflicts_prefer(fabletools::report)
+
 dados <- readRDS("dados/Dados_Estatisticos.rds")
 #write_csv(dados, "~/Downloads/Dados_Estatisticos2.csv")
 dados <- dados |> filter(ANOMES < yearmonth("2020 jan"))

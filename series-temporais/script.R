@@ -64,4 +64,44 @@ report(fit)
 accuracy(fit)
 
 
-
+# 1. Introdução
+# 
+# Contextualizar o problema, justificativa do tema
+# 
+# Incluir referências
+# 
+# Objetivos
+# 
+# 2. Metodologia
+# 
+# Como os objetivos serão atendidos?
+#   
+#   Quais modelos serão utilizados (ETS e ARIMA)
+# 
+# Como os modelos serão ajustados
+# 
+# Como será feita a seleção do modelo (AIC e REQM)
+# 
+# 3. Resultados
+# 
+# Análise descritiva dos dados
+# 
+# Ajuste dos modelos ETS e ARIMA
+# 
+# Seleção do modelo
+# 
+# Análise de diagnóstico
+# 
+# Previsão
+# 
+# 4. Conclusões
+# 
+# O que foi feito neste trabalho? Quais resultados foram obtidos?
+#   
+#   Os objetivos da introdução foram atingidos?
+#   
+#   Qual a importância dos resultados obtidos?
+#   
+#   Sugestões para trabalhos futuros.
+# 
+# 5. Referências
