@@ -69,22 +69,22 @@ Este trabalho utiliza o conjunto de dados empíricos `earthworms`, disponibiliza
 
 ## Justificativa
 
-Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou não), mas os dados disponíveis registram a proporção desse comportamento por amostra (o número de indivpiduos que permaneceram no solo contaminado em relação ao total exposto a cada dose), trata-se de uma variável resposta de dados agrupados. Essa estrutura empírica motiva a aplicação da teoria de MLG sob a suposição de uma distribuição binomial, oque permite modelar adequadamente a probabilidade de um indivíduo permanecer no recipiente contaminado em função da dose recebida.
+Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou não), mas os dados disponíveis registram a proporção desse comportamento por amostra (o número de indivíduos que permaneceram no solo contaminado em relação ao total exposto a cada dose), trata-se de uma variável resposta de dados agrupados. Essa estrutura empírica motiva a aplicação da teoria de MLG sob a suposição de uma distribuição binomial, oque permite modelar adequadamente a probabilidade de um indivíduo permanecer no recipiente contaminado em função da dose recebida.
 
 # Metodologia
 
 ## Variáveis e Distribuição
 
-A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, $Y_i \sim Binomial(n_i, p_i)$. A proporção média esperada é $E(Y_i/n_i) = p_i$, assumindo a componente de variância teórica $Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}$.
+A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, $Y_i \sim \text{Binomial}(n_i, p_i)$. A proporção média esperada é $E(Y_i/n_i) = p_i$, assumindo a componente de variância teórica $Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}$.
 
 Para conectar a probabilidade $p_i$ ao preditor linear $\eta_i$, serão ajustadas e comparadas duas funções de ligação para dados binomiais:
 
 - **Logito**: $\eta_i = \log\left(\frac{p_i}{1-p_i}\right)$
 - **Complemento Log-Log (Cloglog)**: $\eta_i = \log(-\log(1 - p_i))$
 
-Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que $\log(0)$ é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a $p=0,5$. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de $\log(Dose)$. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:
+Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que $\log(0)$ é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a $p=0,5$. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de $\log(\text{Dose})$. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:
 
-- **Deslocamento escalar**: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores $\log(Dose + 1)$ e $\log(Dose + 0,1)$.
+- **Deslocamento escalar**: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores $\log(\text{Dose} + 1)$ e $\log(\text{Dose} + 0,1)$.
 - **Variável indicadora (Dummy)**: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:
 
 $$ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})$$

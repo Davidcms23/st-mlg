@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -70,10 +70,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="dose_resposta_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="dose_resposta_files/libs/quarto-html/anchor.min.js"></script>
 <link href="dose_resposta_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="dose_resposta_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="dose_resposta_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="dose_resposta_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="dose_resposta_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="dose_resposta_files/libs/bootstrap/bootstrap-121c658843653833201efd19df2186e2.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="dose_resposta_files/libs/bootstrap/bootstrap-78eb3a9c81c5d098bbde33a76bf8bf40.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -199,22 +199,22 @@ window.Quarto = {
 </section>
 <section id="justificativa" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="justificativa"><span class="header-section-number">1.2</span> Justificativa</h2>
-<p>Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou não), mas os dados disponíveis registram a proporção desse comportamento por amostra (o número de indivpiduos que permaneceram no solo contaminado em relação ao total exposto a cada dose), trata-se de uma variável resposta de dados agrupados. Essa estrutura empírica motiva a aplicação da teoria de MLG sob a suposição de uma distribuição binomial, oque permite modelar adequadamente a probabilidade de um indivíduo permanecer no recipiente contaminado em função da dose recebida.</p>
+<p>Como o fenômeno estudado avalia a ação individual das minhocas (migrar ou não), mas os dados disponíveis registram a proporção desse comportamento por amostra (o número de indivíduos que permaneceram no solo contaminado em relação ao total exposto a cada dose), trata-se de uma variável resposta de dados agrupados. Essa estrutura empírica motiva a aplicação da teoria de MLG sob a suposição de uma distribuição binomial, oque permite modelar adequadamente a probabilidade de um indivíduo permanecer no recipiente contaminado em função da dose recebida.</p>
 </section>
 </section>
 <section id="metodologia" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Metodologia</h1>
 <section id="variáveis-e-distribuição" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="variáveis-e-distribuição"><span class="header-section-number">2.1</span> Variáveis e Distribuição</h2>
-<p>A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, <span class="math inline">\(Y_i \sim Binomial(n_i, p_i)\)</span>. A proporção média esperada é <span class="math inline">\(E(Y_i/n_i) = p_i\)</span>, assumindo a componente de variância teórica <span class="math inline">\(Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}\)</span>.</p>
+<p>A amostra do estudo consiste em 35 observações empíricas. A variável resposta é a proporção de minhocas retidas no solo contaminado em cada ensaio, estruturada e modelada como dados agrupados sob a suposição de uma distribuição binomial, <span class="math inline">\(Y_i \sim \text{Binomial}(n_i, p_i)\)</span>. A proporção média esperada é <span class="math inline">\(E(Y_i/n_i) = p_i\)</span>, assumindo a componente de variância teórica <span class="math inline">\(Var(Y_i/n_i) = \frac{p_i(1 - p_i)}{n_i}\)</span>.</p>
 <p>Para conectar a probabilidade <span class="math inline">\(p_i\)</span> ao preditor linear <span class="math inline">\(\eta_i\)</span>, serão ajustadas e comparadas duas funções de ligação para dados binomiais:</p>
 <ul>
 <li><strong>Logito</strong>: <span class="math inline">\(\eta_i = \log\left(\frac{p_i}{1-p_i}\right)\)</span></li>
 <li><strong>Complemento Log-Log (Cloglog)</strong>: <span class="math inline">\(\eta_i = \log(-\log(1 - p_i))\)</span></li>
 </ul>
-<p>Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que <span class="math inline">\(\log(0)\)</span> é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a <span class="math inline">\(p=0,5\)</span>. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de <span class="math inline">\(\log(Dose)\)</span>. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:</p>
+<p>Na componente sistemática, o tratamento da dose zero (grupo controle) exige adaptação matemática, visto que <span class="math inline">\(\log(0)\)</span> é indefinido. Na ausência de estímulo tóxico, a locação espacial dos organismos assume uma distribuição equiprovável, estabelecendo uma probabilidade basal esperada de retenção próxima a <span class="math inline">\(p=0,5\)</span>. Essa descontinuidade conceitual e matemática inviabiliza o ajuste de uma regressão ordinária diretamente em função de <span class="math inline">\(\log(\text{Dose})\)</span>. Para contornar esta limitação e avaliar a sensibilidade do modelo, serão testadas duas abordagens estruturais:</p>
 <ul>
-<li><strong>Deslocamento escalar</strong>: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores <span class="math inline">\(\log(Dose + 1)\)</span> e <span class="math inline">\(\log(Dose + 0,1)\)</span>.</li>
+<li><strong>Deslocamento escalar</strong>: Adição de constantes arbitrárias à variável explicativa para viabilizar a transformação logarítmica em todo o conjunto de dados, testando os preditores <span class="math inline">\(\log(\text{Dose} + 1)\)</span> e <span class="math inline">\(\log(\text{Dose} + 0,1)\)</span>.</li>
 <li><strong>Variável indicadora (Dummy)</strong>: Formulação do modelo em segmentos, isolando o efeito do controle das doses ativas por meio da equação:</li>
 </ul>
 <p><span class="math display">\[ \eta_i = \beta_0 + \beta_1I_{\text{controle}} + \beta_2\log(\text{Dose}_{\text{ativa}})\]</span></p>
