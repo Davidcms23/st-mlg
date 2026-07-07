@@ -1,3 +1,5 @@
+# Preparação -------------------------------------------------------------------
+
 rm(list = ls()); gc(full = TRUE)
 library(tidyverse); library(fpp3); library(fpp2); library(urca); library(tseries)
 
@@ -6,40 +8,39 @@ dados <- readRDS("dados/Dados_Estatisticos.rds")
 dados <- dados |> filter(ANOMES < yearmonth("2020 jan"))
 dados <- dados |> 
   dplyr::ungroup()
+
+# ------------------------------------------------------------------------------
+
+# Descritiva -------------------------------------------------------------------
+
 dados |> autoplot()
 dados |> ACF(lag_max = 42) |> autoplot()
 
 dados |> gg_season()
 dados |> gg_subseries()
 
+# ------------------------------------------------------------------------------
+
+# Transformação ----------------------------------------------------------------
+
 dados |> 
   features(n, features = guerrero) # sem transformação
+
+# ------------------------------------------------------------------------------
+
+# Modelos ETS ------------------------------------------------------------------
 
 treinamento <- dados |> head(216)
 teste <- dados |> tail(nrow(dados) - 216)
 
 ajustes_todos <- treinamento |>
   model(
-    aaa = ETS(n ~ error("A") + trend("A") + season("A")),
-    aan = ETS(n ~ error("A") + trend("A") + season("N")),
-    aam = ETS(n ~ error("A") + trend("A") + season("M")),
-    ana = ETS(n ~ error("A") + trend("N") + season("A")),
-    ann = ETS(n ~ error("A") + trend("N") + season("N")),
-    anm = ETS(n ~ error("A") + trend("N") + season("M")),
-    ama = ETS(n ~ error("A") + trend("M") + season("A")),
-    amn = ETS(n ~ error("A") + trend("M") + season("N")),
-    amm = ETS(n ~ error("A") + trend("M") + season("M")),
-
-    maa = ETS(n ~ error("M") + trend("A") + season("A")),
-    man = ETS(n ~ error("M") + trend("A") + season("N")),
-    mam = ETS(n ~ error("M") + trend("A") + season("M")),
     mna = ETS(n ~ error("M") + trend("N") + season("A")),
-    mnn = ETS(n ~ error("M") + trend("N") + season("N")),
     mnm = ETS(n ~ error("M") + trend("N") + season("M")),
     mma = ETS(n ~ error("M") + trend("M") + season("A")),
-    mmn = ETS(n ~ error("M") + trend("M") + season("N")),
-    mmm = ETS(n ~ error("M") + trend("M") + season("M")),
-    auto = ETS()
+    auto = ETS(),
+    ana = ETS(n ~ error("A") + trend("N") + season("A")),
+    maa = ETS(n ~ error("M") + trend("A") + season("A")),
   )
 
 ajustes_todos |> 
@@ -49,78 +50,112 @@ ajustes_todos |>
 
 ajustes_todos |> select(auto) # = mna
 
+ajustes_todos <- treinamento |>
+  model(
+    mna = ETS(n ~ error("M") + trend("N") + season("A")),
+    mnm = ETS(n ~ error("M") + trend("N") + season("M")),
+    mma = ETS(n ~ error("M") + trend("M") + season("A")),
+    ana = ETS(n ~ error("A") + trend("N") + season("A")),
+    maa = ETS(n ~ error("M") + trend("A") + season("A")),
+  )
+
+ajustes_todos |> 
+  report() |>
+  select(.model, AICc, BIC, sigma2) |> 
+  arrange(AICc)
+
+fc_todos <- ajustes_todos |> 
+  forecast(h = "2 years")
+
+accuracy(fc_todos, dados) |> arrange(RMSE)
+
 ajustes_reduzidos <- treinamento |>
   model(
     mna = ETS(n ~ error("M") + trend("N") + season("A")),
     mnm = ETS(n ~ error("M") + trend("N") + season("M")),
-    mma = ETS(n ~ error("M") + trend("M") + season("A"))
+    ana = ETS(n ~ error("A") + trend("N") + season("A")),
   )
 
-fc_mna <- ajustes_reduzidos |> 
-  forecast(h = "2 years")
+# Modelos ARIMA ----------------------------------------------------------------
+## Estacionaridade
 
-accuracy(fc_mna, dados)
+#nsdiffs(ts(dados, frequency = 12))
+#ndiffs(ts(dados))
 
-ajustes_reduzidos |> 
-  select(mna) |> 
-  gg_tsresiduals() # falhou, todos falham
-
-ajustes_reduzidos |> 
-  augment() |> 
-  features(.innov, ljung_box, lag = 24, dof = 3) # dof varia conforme os parâmetros do modelo
-
-nsdiffs(ts(dados, frequency = 12))
-ndiffs(ts(dados))
+dados |> 
+  features(n, list(unitroot_nsdiffs, unitroot_ndiffs))
 
 dados |> autoplot(n |> difference(1)) # Bem melhor
-dados |> autoplot(n |> difference(6))
+dados |> autoplot(n |> difference(6)) # Má interpretabilidade, foi só pra ver
 dados |> autoplot(n |> difference(12))
+dados |> autoplot(difference(difference(n, 1), 6)) # Má interpretabilidade, foi só pra ver
 dados |> autoplot(difference(difference(n, 1), 12))
-dados |> autoplot(difference(difference(n, 1), 6))
 
-dados |> 
-  features(n, list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
+#dados |> 
+#  features(n, list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
 
-dados |> 
-  features(n |> difference(1), list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
+#dados |> 
+#  features(n |> difference(1), list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
 
-dados |> 
-  features(n |> difference(1) |> difference(12), list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
+#dados |> 
+#  features(n |> difference(1) |> difference(12), list(unitroot_kpss, unitroot_nsdiffs, unitroot_ndiffs))
 
+## Testes ADF
 
 adf.test(
-  diff(diff(dados$n, lag = 12), lag = 1) # Passa
+  dados$n # Série base não é estacionária
 )
 
-summary(
+adf.test(
+  diff(dados$n, lag = 1) # Série com 1 diferença simples é estacionária
+)
+
+adf.test(
+  diff(dados$n, lag = 12) # Série com 1 diferença sazonal não é estacionária
+)
+
+adf.test(
+  diff(diff(dados$n, lag = 12), lag = 1) # Série com 2 diferenças é estacionária
+)
+
+## Testes KPSS
+
+summary( # Série não é estacionária
   ur.kpss(
-    diff(diff(dados$n, lag = 12), lag = 1) # Passa
+    dados$n
+  )
+)
+
+summary( # Com 1 diferença simples é estacionária
+  ur.kpss(
+    diff(dados$n, lag = 1) 
+  )
+)
+
+summary( # Com 1 diferença sazonal diz que é estacionária
+  ur.kpss(
+    diff(dados$n, lag = 12) 
   )
 )
 
 summary(
   ur.kpss(
-    diff(dados$n, lag = 12) # Passa
+    diff(diff(dados$n, lag = 12), lag = 1) # Com 2 diferenças é estacionária
   )
 )
 
-adf.test(
-  diff(dados$n, lag = 1) # Passa
-)
-
-adf.test(
-  diff(dados$n, lag = 12) # Não passa
-)
+## Definição dos modelos
 
 dados |> 
   gg_tsdisplay(
-    difference(n, 1) |> difference(12), 
+    difference(n, 1) |> difference(12), # Segui com 2 diferenças
     plot_type = "partial",
     lag_max = 36
   )
 
 auto.arima(dados) # (1,1,1)(2, 0, 0)
-auto.arima(dados |> mutate(n = difference(difference(n, 1), 12)))
+auto.arima(dados |> mutate(n = difference(n, 1))) # (1, 1, 1)(2, 0, 0)
+auto.arima(dados |> mutate(n = difference(difference(n, 1), 12))) # (0, 1, 2)(2, 1, 2)
 
 modelos_arima_todos <- treinamento |> 
   model(
@@ -133,6 +168,7 @@ modelos_arima_todos <- treinamento |>
     best2 = ARIMA(n ~ 0 + pdq(2, 0, 2) + PDQ(2, 1, 2,)),
     best = ARIMA(n ~ 0 + pdq(2, 0, 1) + PDQ(2, 1, 2,)),
     best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
+    auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
   )
 
 modelos_arima_todos |> report() |> arrange(AICc)
@@ -149,7 +185,8 @@ modelos_reduzidos <- treinamento |>
     airline   = ARIMA(n ~ pdq(0,1,1) + PDQ(0,1,1)),
     arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
     best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
-    arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1))
+    arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
+    auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
   )
 
 fc_arimas <- modelos_reduzidos |> 
@@ -162,6 +199,16 @@ modelos_reduzidos |>
   autoplot(dados |> tail(36))
 
 autoplot(dados)
+
+# Resíduos ---------------------------------------------------------------------
+
+ajustes_reduzidos |> 
+  select(mna) |> 
+  gg_tsresiduals() # falhou, todos falham
+
+ajustes_reduzidos |> 
+  augment() |> 
+  features(.innov, ljung_box, lag = 24, dof = 3) # dof varia conforme os parâmetros do modelo
 
 modelos_reduzidos |> 
   select(arima1) |> 
@@ -198,3 +245,29 @@ melhor_modelo_geral <- dados |>
 melhor_modelo_geral |> 
   forecast(h = "4 years") |> 
   autoplot(dados)
+
+# Extra ------------------------------------------------------------------------
+
+ajustes_todos <- treinamento |>
+  model(
+    aaa = ETS(n ~ error("A") + trend("A") + season("A")),
+    aan = ETS(n ~ error("A") + trend("A") + season("N")),
+    aam = ETS(n ~ error("A") + trend("A") + season("M")),
+    ana = ETS(n ~ error("A") + trend("N") + season("A")),
+    ann = ETS(n ~ error("A") + trend("N") + season("N")),
+    anm = ETS(n ~ error("A") + trend("N") + season("M")),
+    ama = ETS(n ~ error("A") + trend("M") + season("A")),
+    amn = ETS(n ~ error("A") + trend("M") + season("N")),
+    amm = ETS(n ~ error("A") + trend("M") + season("M")),
+    
+    maa = ETS(n ~ error("M") + trend("A") + season("A")),
+    man = ETS(n ~ error("M") + trend("A") + season("N")),
+    mam = ETS(n ~ error("M") + trend("A") + season("M")),
+    mna = ETS(n ~ error("M") + trend("N") + season("A")),
+    mnn = ETS(n ~ error("M") + trend("N") + season("N")),
+    mnm = ETS(n ~ error("M") + trend("N") + season("M")),
+    mma = ETS(n ~ error("M") + trend("M") + season("A")),
+    mmn = ETS(n ~ error("M") + trend("M") + season("N")),
+    mmm = ETS(n ~ error("M") + trend("M") + season("M")),
+    auto = ETS()
+  )
