@@ -171,6 +171,18 @@ modelos_arima_todos <- treinamento |>
     auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
   )
 
+modelos_arima_todos <- treinamento |> # Sem airline, use esse nos slides
+  model(
+    auto1 = ARIMA(n ~ pdq(1, 1, 1) + PDQ(2, 0, 0)),
+    auto2 = ARIMA(n),
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
+    best2 = ARIMA(n ~ 0 + pdq(2, 0, 2) + PDQ(2, 1, 2,)), # De christian
+    best = ARIMA(n ~ 0 + pdq(2, 0, 1) + PDQ(2, 1, 2,)), # De christian
+    best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)), # De christian modificado com 2 diferenças
+    auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2)) # auto.arima com 2 diferenças
+  )
+
 modelos_arima_todos |> report() |> arrange(AICc)
 # ATENÇÃO: A gente tem que usar o RMSE para comparar modelos com quantidade de diferenças diferentes. Por exemplo: (1, 0, 1)(1, 1, 1) e (1, 1, 1)(1, 1, 1)
 modelos_arima_todos |> select(auto2) # (0, 1, 2)(1, 0, 0)
@@ -182,12 +194,13 @@ accuracy(fc_arimas_todos, dados) |> arrange(RMSE) # esse modelo faz total sentid
 
 modelos_reduzidos <- treinamento |> 
   model(
-    airline   = ARIMA(n ~ pdq(0,1,1) + PDQ(0,1,1)),
     arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
-    best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
     arima2 = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
-    auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
+    best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)), # De christian modificado com 2 diferenças
+    auto3 = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2)) # auto.arima com 2 diferenças
   )
+
+modelos_reduzidos |> report() |> arrange(AICc)
 
 fc_arimas <- modelos_reduzidos |> 
   forecast(h = "2 years")
@@ -198,13 +211,19 @@ modelos_reduzidos |>
   forecast(h = "2 years") |> 
   autoplot(dados |> tail(36))
 
-autoplot(dados)
-
 # Resíduos ---------------------------------------------------------------------
 
 ajustes_reduzidos |> 
   select(mna) |> 
-  gg_tsresiduals() # falhou, todos falham
+  gg_tsresiduals(lag_max = 36) # falhou, todos falham
+
+ajustes_reduzidos |> 
+  select(ana) |> 
+  gg_tsresiduals(lag_max = 36) # falhou, todos falham
+
+ajustes_reduzidos |> 
+  select(mnm) |> 
+  gg_tsresiduals(lag_max = 36) # falhou, todos falham
 
 ajustes_reduzidos |> 
   augment() |> 
@@ -212,41 +231,84 @@ ajustes_reduzidos |>
 
 modelos_reduzidos |> 
   select(arima1) |> 
-  gg_tsresiduals()
+  gg_tsresiduals(lag_max = 36)
 
 modelos_reduzidos |> 
-  select(airline) |> 
-  gg_tsresiduals()
+  select(arima2) |> 
+  gg_tsresiduals(lag_max = 36)
 
-modelos_reduzidos |> augment() |> 
-  filter(.model == "airline") |> 
-  features(.innov, ljung_box, lag = 24, dof = 2)
+modelos_reduzidos |> 
+  select(best2ad) |> 
+  gg_tsresiduals(lag_max = 36)
+
+modelos_reduzidos |> 
+  select(auto3) |> 
+  gg_tsresiduals(lag_max = 36)
 
 modelos_reduzidos |> augment() |>
   filter(.model == "arima1") |> 
   features(.innov, ljung_box, lag = 24, dof = 5)
 
-melhor_modelo <- modelos_reduzidos |> select(arima1)
-shapiro.test((melhor_modelo |> augment())$.innov)
+modelos_reduzidos |> augment() |> 
+  filter(.model == "arima2") |> 
+  features(.innov, ljung_box, lag = 24, dof = 4)
 
-melhor_modelo |> 
+modelos_reduzidos |> augment() |>
+  filter(.model == "best2ad") |> 
+  features(.innov, ljung_box, lag = 24, dof = 8)
+
+modelos_reduzidos |> augment() |>
+  filter(.model == "auto3") |> 
+  features(.innov, ljung_box, lag = 24, dof = 6)
+
+melhor_modelo_arima <- modelos_reduzidos |> select(arima1)
+melhor_modelo_ets <- ajustes_reduzidos |> select(mna)
+
+shapiro.test((melhor_modelo_arima |> augment())$.innov)
+shapiro.test((melhor_modelo_ets |> augment())$.innov)
+
+# Comparação final -------------------------------------------------------------
+
+ajuste_final <- treinamento |> 
+  model(
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    mna = ETS(n ~ error("M") + trend("N") + season("A"))
+  )
+
+fc_final <- ajuste_final |> 
+  forecast(h = "2 years")
+
+ajuste_final |> 
+  report() |>
+  select(.model, AICc, BIC, sigma2) |> 
+  arrange(AICc)
+
+accuracy(fc_final, dados) |> arrange(RMSE)
+
+ajuste_final |> 
   forecast(h = "2 years") |> 
   autoplot(dados |> tail(36))
 
-melhor_modelo |> 
-  forecast(h = "4 years") |> 
-  autoplot(dados)
+melhor_modelo_arima |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36))
+
+melhor_modelo_ets |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36))
 
 melhor_modelo_geral <- dados |> 
   model(
     arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1))
   )
 
+# Previsão ---------------------------------------------------------------------
+
 melhor_modelo_geral |> 
   forecast(h = "4 years") |> 
   autoplot(dados)
 
-# Extra ------------------------------------------------------------------------
+# Extra, ignore ----------------------------------------------------------------
 
 ajustes_todos <- treinamento |>
   model(
@@ -271,3 +333,27 @@ ajustes_todos <- treinamento |>
     mmm = ETS(n ~ error("M") + trend("M") + season("M")),
     auto = ETS()
   )
+
+adf.test(
+  diff(diff(dados$n, lag = 6), lag = 1) # Série com 2 diferenças é estacionária
+)
+
+summary(
+  ur.kpss(
+    diff(diff(dados$n, lag = 6), lag = 1) # Com 2 diferenças é estacionária
+  )
+)
+
+modelos_teste <- treinamento |> 
+  model(
+    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    arima2 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1, period = 6)),
+    arima3 = ARIMA(n ~ 0 + pdq(1,1,6) + PDQ(2, 1, 1))
+  )
+
+modelos_teste |> report() |> arrange(AICc)
+
+fc_teste <- modelos_teste |> 
+  forecast(h = "2 years")
+
+accuracy(fc_teste, dados) |> arrange(RMSE)
