@@ -6,8 +6,8 @@
 <script src="slides_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="slides_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.9.37">
+<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
 
   <meta name="author" content="Adryãn e Christian">
   <title>Séries de Voos: Modelagem e Previsão com ETS e ARIMA</title>
@@ -142,16 +142,6 @@ Adryãn e Christian
 </div>
 
 </section>
-<section class="slide level2">
-
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>          used (Mb) gc trigger (Mb) max used (Mb)
-Ncells  614947 32.9    1402230 74.9   709522 37.9
-Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
-</div>
-</div>
-</section>
 <section>
 <section id="introdução" class="title-slide slide level1 center">
 <h1>Introdução</h1>
@@ -174,8 +164,8 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
 <section id="ajuste-dos-modelos" class="slide level2">
 <h2>Ajuste dos modelos</h2>
 </section>
-<section id="seleção-do-modelo-aic-e-reqmrmes" class="slide level2">
-<h2>Seleção do modelo: AIC e REQM(RMES)</h2>
+<section id="seleção-do-modelo-aic-e-reqm-rmse" class="slide level2">
+<h2>Seleção do modelo: AIC e REQM (RMSE)</h2>
 </section></section>
 <section>
 <section id="resultados" class="title-slide slide level1 center">
@@ -190,12 +180,48 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
 <h2>Comportamento sazonal</h2>
 
 <img data-src="slides_files/figure-revealjs/sazonalidade-1.png" width="960" class="r-stretch"></section>
+<section id="comportamento-sazonal-1" class="slide level2">
+<h2>Comportamento sazonal</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
 <section id="autocorrelação" class="slide level2">
 <h2>Autocorrelação</h2>
 
 <img data-src="slides_files/figure-revealjs/acf-inicial-1.png" width="960" class="r-stretch"></section>
+<section id="transformações" class="slide level2">
+<h2>Transformações</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  lambda_guerrero
+            &lt;dbl&gt;
+1            1.85</code></pre>
+</div>
+</div>
+<ul>
+<li>Sem transformação.</li>
+</ul>
+</section>
 <section id="ajuste-do-modelo-ets" class="slide level2">
 <h2>Ajuste do modelo ETS</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>    [,1]      
+mna ETS(M,N,A)
+mnm ETS(M,N,M)
+ana ETS(A,N,A)</code></pre>
+</div>
+</div>
+<ul>
+<li>Possibilidade de variância não constante;</li>
+<li>Falta de tendência clara;</li>
+<li>Os picos sazonais parecem constante;</li>
+<li>Ajustes com dados de treinamento (2000-2017);</li>
+<li>Teste com 2 anos (2018-2019).</li>
+</ul>
+</section>
+<section id="seleção-do-modelo-ets" class="slide level2">
+<h2>Seleção do modelo ETS</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 4
@@ -206,6 +232,26 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
 3 mnm    3438. 3486.     0.00351</code></pre>
 </div>
 </div>
+<ul>
+<li>Menor AICc e BIC: mna.</li>
+</ul>
+</section>
+<section id="seleção-do-modelo-ets-1" class="slide level2">
+<h2>Seleção do modelo ETS</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  .model .type  RMSE
+  &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;
+1 mnm    Test   244.
+2 ana    Test   333.
+3 mna    Test   350.</code></pre>
+</div>
+</div>
+<ul>
+<li>Menor RMSE: mnm;</li>
+<li>Escolha: mnm.</li>
+</ul>
 </section>
 <section id="estacionaridade-da-série" class="slide level2">
 <h2>Estacionaridade da série</h2>
@@ -218,10 +264,14 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
 </div>
 </div>
 </section>
-<section id="uma-diferença-sazonal-vs.-duas-diferenças" class="slide level2">
-<h2>Uma diferença sazonal vs.&nbsp;duas diferenças</h2>
+<section id="escolha-das-diferenças" class="slide level2">
+<h2>Escolha das diferenças</h2>
 
 <img data-src="slides_files/figure-revealjs/diferencas-juntas-1.png" width="960" class="r-stretch"></section>
+<section id="uma-diferença-simples" class="slide level2">
+<h2>Uma diferença simples</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-5-1.png" width="960" class="r-stretch"></section>
 <section id="uma-diferença-sazonal" class="slide level2">
 <h2>Uma diferença sazonal</h2>
 
@@ -230,43 +280,67 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
 <h2>Duas diferenças (simples + sazonal)</h2>
 
 <img data-src="slides_files/figure-revealjs/diferenca-dupla-1.png" width="960" class="r-stretch"></section>
+<section id="testes-de-estacionariedade" class="slide level2">
+<h2>Testes de estacionariedade</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 6
+  Transformação     d_simples D_sazonal ADF_pvalue KPSS_Stat KPSS_Crit_5pct
+  &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt;
+1 Série Original            0         0     0.391     1.20            0.463
+2 Diferença Simples         1         0     0.01      0.0399          0.463
+3 Diferença Sazonal         0         1     0.0806    0.158           0.463
+4 Diferença Dupla           1         1     0.01      0.0218          0.463</code></pre>
+</div>
+</div>
+</section>
+<section id="parâmetros-do-sarima-uma-diferença-simples" class="slide level2">
+<h2>Parâmetros do SARIMA (uma diferença simples)</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-7-1.png" width="960" class="r-stretch"></section>
+<section id="parâmetros-do-sarima-duas-diferenças" class="slide level2">
+<h2>Parâmetros do SARIMA (duas diferenças)</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
 <section id="comparação-uma-vs.-duas-diferenças-rmse" class="slide level2">
 <h2>Comparação: uma vs.&nbsp;duas diferenças (RMSE)</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 8 × 3
+<pre><code># A tibble: 9 × 3
   .model  ordem                    RMSE
   &lt;chr&gt;   &lt;chr&gt;                   &lt;dbl&gt;
 1 arima1  ARIMA(1,1,1)(2,1,1)[12]  224.
-2 best2ad ARIMA(2,1,2)(2,1,2)[12]  256.
-3 auto3   ARIMA(0,1,2)(2,1,2)[12]  258.
-4 arima2  ARIMA(0,1,1)(2,1,1)[12]  265.
-5 auto1   ARIMA(1,1,1)(2,0,0)[12]  324.
-6 best    ARIMA(2,0,1)(2,1,2)[12]  342.
-7 best2   ARIMA(2,0,2)(2,1,2)[12]  342.
-8 auto2   ARIMA(0,1,2)(1,0,0)[12]  406.</code></pre>
+2 arima3  ARIMA(1,1,1)(2,0,1)[12]  239.
+3 best2ad ARIMA(2,1,2)(2,1,2)[12]  256.
+4 auto3   ARIMA(0,1,2)(2,1,2)[12]  258.
+5 arima2  ARIMA(0,1,1)(2,1,1)[12]  265.
+6 auto1   ARIMA(1,1,1)(2,0,0)[12]  324.
+7 best    ARIMA(2,0,1)(2,1,2)[12]  342.
+8 best2   ARIMA(2,0,2)(2,1,2)[12]  342.
+9 auto2   ARIMA(0,1,2)(1,0,0)[12]  406.</code></pre>
 </div>
 </div>
 </section>
-<section id="acf-e-pacf-do-modelo-escolhido" class="slide level2">
-<h2>ACF e PACF do modelo escolhido</h2>
-
-<img data-src="slides_files/figure-revealjs/acf-pacf-escolhido-1.png" width="960" class="r-stretch"></section>
-<section id="ajuste-do-modelo-arima" class="slide level2">
-<h2>Ajuste do modelo ARIMA</h2>
+<section id="comparações-aicc" class="slide level2">
+<h2>Comparações (AICc)</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 5
-  .model  ordem                    AICc   BIC sigma2
-  &lt;chr&gt;   &lt;chr&gt;                   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
-1 auto3   ARIMA(0,1,2)(2,1,2)[12] 2707. 2730. 32018.
-2 arima1  ARIMA(1,1,1)(2,1,1)[12] 2709. 2728. 32670.
-3 best2ad ARIMA(2,1,2)(2,1,2)[12] 2709. 2738. 31604.
-4 arima2  ARIMA(0,1,1)(2,1,1)[12] 2711. 2727. 33290.</code></pre>
+<pre><code># A tibble: 9 × 4
+  .model  ordem                    AICc   BIC
+  &lt;chr&gt;   &lt;chr&gt;                   &lt;dbl&gt; &lt;dbl&gt;
+1 auto3   ARIMA(0,1,2)(2,1,2)[12] 2707. 2730.
+2 arima1  ARIMA(1,1,1)(2,1,1)[12] 2709. 2728.
+3 best2ad ARIMA(2,1,2)(2,1,2)[12] 2709. 2738.
+4 arima2  ARIMA(0,1,1)(2,1,1)[12] 2711. 2727.
+5 best    ARIMA(2,0,1)(2,1,2)[12] 2718. 2744.
+6 best2   ARIMA(2,0,2)(2,1,2)[12] 2720. 2749.
+7 auto1   ARIMA(1,1,1)(2,0,0)[12] 2869. 2886.
+8 auto2   ARIMA(0,1,2)(1,0,0)[12] 2870. 2883.
+9 arima3  ARIMA(1,1,1)(2,0,1)[12] 5149. 5169.</code></pre>
 </div>
 </div>
 <aside class="notes">
-<p>Aqui o AICc é válido: todos os modelos têm d=1 e D=1 (mesma ordem de diferenciação), diferindo apenas em p, q, P, Q. auto3 venceu com o menor AICc.</p>
+<p>Aqui o AICc é válido: todos os modelos têm d=1 e D=1 (mesma ordem de diferenciação), diferindo apenas em p, q, P, Q. auto3 venceu com o menor AICc. não</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -279,34 +353,37 @@ Vcells 1125905  8.6    8388608 64.0  1977551 15.1</code></pre>
           display:block!important;
       }</style></aside>
 </section>
-<section id="por-que-arima012212" class="slide level2">
-<h2>Por que ARIMA(0,1,2)(2,1,2)?</h2>
+<section id="por-que-sarima111211" class="slide level2">
+<h2>Por que SARIMA(1,1,1)(2,1,1)?</h2>
 <ul>
-<li class="fragment">RMSE definiu a diferenciação</li>
-<li class="fragment">Menor AICc entre os candidatos</li>
-<li class="fragment">Por que usar o AICc como críterio de decisão?</li>
-<li class="fragment">Mesma diferenciação (d=1, D=1)</li>
-<li class="fragment">Penaliza modelos excessivamente complexos (parcimônia)</li>
+<li class="fragment">Menor RMSE</li>
+<li class="fragment">AICc próximo dos outros</li>
+<li class="fragment">Por que usar o RMSE como críterio de decisão?</li>
+<li class="fragment">Compara as previsões do modelo com os dados reais.</li>
 </ul>
 </section>
 <section id="seleção-do-modelo-acurácia-fora-da-amostra" class="slide level2">
 <h2>Seleção do modelo: acurácia fora da amostra</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 10
-  .model .type    ME  RMSE   MAE    MPE  MAPE  MASE RMSSE  ACF1
-  &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 arima1 Test  -178.  224.  183.  -7.09  7.27 0.638 0.626 0.166
-2 mna    Test  -312.  350.  312. -12.3  12.3  1.09  0.981 0.367</code></pre>
+<pre><code># A tibble: 2 × 3
+  .model .type  RMSE
+  &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt;
+1 arima1 Test   224.
+2 mnm    Test   244.</code></pre>
 </div>
 </div>
 </section>
-<section id="diagnóstico-dos-resíduos" class="slide level2">
-<h2>Diagnóstico dos resíduos</h2>
+<section id="diagnóstico-dos-resíduos-sarima" class="slide level2">
+<h2>Diagnóstico dos resíduos (SARIMA)</h2>
 
 <img data-src="slides_files/figure-revealjs/residuos-1.png" width="960" class="r-stretch"></section>
-<section id="teste-de-ljung-box-e-shapiro-wilk" class="slide level2">
-<h2>Teste de Ljung-Box e Shapiro-Wilk</h2>
+<section id="diagnóstico-dos-resíduos-ets" class="slide level2">
+<h2>Diagnóstico dos resíduos (ETS)</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-9-1.png" width="960" class="r-stretch"></section>
+<section id="teste-de-ljung-box-e-shapiro-wilk-sarima" class="slide level2">
+<h2>Teste de Ljung-Box e Shapiro-Wilk (SARIMA)</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 3
@@ -322,6 +399,27 @@ data:  (augment(melhor_modelo_arima))$.innov
 W = 0.97967, p-value = 0.003291</code></pre>
 </div>
 </div>
+</section>
+<section id="teste-de-ljung-box-e-shapiro-wilk-ets" class="slide level2">
+<h2>Teste de Ljung-Box e Shapiro-Wilk (ETS)</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  .model lb_stat   lb_pvalue
+  &lt;chr&gt;    &lt;dbl&gt;       &lt;dbl&gt;
+1 mnm       70.4 0.000000576</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  (augment(melhor_modelo_ets))$.innov
+W = 0.98121, p-value = 0.005599</code></pre>
+</div>
+</div>
+<ul>
+<li>Escolha, SARIMA(1,1,1)(2,1,1)</li>
+</ul>
 </section>
 <section id="previsão" class="slide level2">
 <h2>Previsão</h2>

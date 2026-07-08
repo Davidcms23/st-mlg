@@ -363,3 +363,25 @@ fc_teste <- modelos_teste |>
   forecast(h = "2 years")
 
 accuracy(fc_teste, dados) |> arrange(RMSE)
+
+ajuste_final <- dados |> 
+  model(
+    arima1  = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    mnm = ETS(n ~ error("M") + trend("N") + season("M"))
+  )
+
+ajuste_final |> augment() |>
+  dplyr::filter(.model == "arima1") |> 
+  features(.innov, ljung_box, lag = 24, dof = 5)
+
+melhor_modelo_arima <- ajuste_final |> select(arima1)
+
+shapiro.test((melhor_modelo_arima |> augment())$.innov)
+
+ajuste_final |> augment() |>
+  dplyr::filter(.model == "mnm") |> 
+  features(.innov, ljung_box, lag = 24, dof = 2)
+
+melhor_modelo_ets <- ajuste_final |> select(mnm)
+
+shapiro.test((melhor_modelo_ets |> augment())$.innov)

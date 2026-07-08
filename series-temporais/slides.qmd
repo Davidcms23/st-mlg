@@ -8,6 +8,8 @@ format:
     transition: fade
     toc: false
 editor: visual
+execute:
+  cache: true
 ---
 
 ```{r}
@@ -15,6 +17,7 @@ editor: visual
 #| echo: false
 #| message: false
 #| warning: false
+#| results: false
 
 rm(list = ls()); gc(full = TRUE)
 
@@ -34,8 +37,10 @@ dados <- readRDS("dados/Dados_Estatisticos.rds")
 dados <- dados |> filter(ANOMES < yearmonth("2020 jan"))
 dados <- dados |> dplyr::ungroup()
 
-treinamento <- dados |> head(216)
-teste <- dados |> tail(nrow(dados) - 216)
+anos_slice <- 2
+treinamento <- dados |> head(nrow(dados) - 12*anos_slice)
+teste <- dados |> tail(nrow(dados) - (nrow(dados) - 12*anos_slice))
+rm(anos_slice)
 ```
 
 # Introdução
@@ -50,7 +55,7 @@ teste <- dados |> tail(nrow(dados) - 216)
 
 ## Ajuste dos modelos
 
-## Seleção do modelo: AIC e REQM(RMES)
+## Seleção do modelo: AIC e REQM (RMSE)
 
 # Resultados
 
@@ -60,7 +65,7 @@ teste <- dados |> tail(nrow(dados) - 216)
 #| label: descritiva
 #| echo: false
 
-dados |> autoplot()
+dados |> autoplot() + labs(x = "Data", y = "Número de Voos")
 ```
 
 ## Comportamento sazonal
@@ -69,7 +74,13 @@ dados |> autoplot()
 #| label: sazonalidade
 #| echo: false
 
-dados |> gg_season()
+dados |> gg_season() + labs(x = "Data", y = "Número de Voos")
+```
+
+## Comportamento sazonal
+
+```{r}
+dados |> gg_subseries() + labs(x = "Data", y = "Número de Voos")
 ```
 
 ## Autocorrelação
@@ -80,6 +91,15 @@ dados |> gg_season()
 
 dados |> ACF(lag_max = 42) |> autoplot()
 ```
+
+## Transformações
+
+```{r}
+dados |> 
+  features(n, features = guerrero)
+```
+
+* Sem transformação.
 
 ## Ajuste do modelo ETS
 
@@ -94,11 +114,37 @@ ajustes_reduzidos <- treinamento |>
     ana = ETS(n ~ error("A") + trend("N") + season("A")),
   )
 
+t(ajustes_reduzidos)
+```
+
+* Possibilidade de variância não constante;
+* Falta de tendência clara;
+* Os picos sazonais parecem constante;
+* Ajustes com dados de treinamento (2000-2017);
+* Teste com 2 anos (2018-2019).
+
+## Seleção do modelo ETS
+
+```{r}
 ajustes_reduzidos |> 
   report() |>
   select(.model, AICc, BIC, sigma2) |> 
   arrange(AICc)
 ```
+
+* Menor AICc e BIC: mna.
+
+## Seleção do modelo ETS
+
+```{r}
+fc_reduzido_ets <- ajustes_reduzidos |> 
+  forecast(h = "2 years")
+
+accuracy(fc_reduzido_ets, dados) |> select(.model, .type, RMSE) |> arrange(RMSE)
+```
+
+* Menor RMSE: mnm;
+* Escolha: mnm.
 
 ## Estacionaridade da série
 
@@ -110,7 +156,7 @@ dados |>
   features(n, list(unitroot_nsdiffs, unitroot_ndiffs))
 ```
 
-## Uma diferença sazonal vs. duas diferenças
+## Escolha das diferenças
 
 ```{r}
 #| label: diferencas-juntas
@@ -118,12 +164,20 @@ dados |>
 
 dados |> 
   mutate(
+    d_simples = difference(n, 1),
     d_sazonal = difference(n, 12),
     d_dupla   = difference(difference(n, 1), 12)
   ) |> 
-  pivot_longer(c(d_sazonal, d_dupla), names_to = "serie", values_to = "valor") |> 
-  as_tsibble(index = ANOMES, key = serie) |> 
-  autoplot(valor)
+  pivot_longer(c(d_simples, d_sazonal, d_dupla), names_to = "Série", values_to = "Valor") |> 
+  as_tsibble(index = ANOMES, key = Série) |> 
+  autoplot(Valor) +
+  labs(x = "Data")
+```
+
+## Uma diferença simples
+
+```{r}
+dados |> autoplot(n |> difference(1)) + labs(x = "Data")
 ```
 
 ## Uma diferença sazonal
@@ -132,7 +186,7 @@ dados |>
 #| label: diferenca-sazonal
 #| echo: false
 
-dados |> autoplot(difference(n, 12))
+dados |> autoplot(difference(n, 12)) + labs(x = "Data")
 ```
 
 ## Duas diferenças (simples + sazonal)
@@ -141,7 +195,60 @@ dados |> autoplot(difference(n, 12))
 #| label: diferenca-dupla
 #| echo: false
 
-dados |> autoplot(difference(difference(n, 1), 12))
+dados |> autoplot(difference(difference(n, 1), 12)) + labs(x = "Data")
+```
+
+## Testes de estacionariedade
+
+```{r}
+tabela_testes <- function(serie, d, D, nome) {
+
+  teste_adf <- adf.test(serie)
+  
+  teste_kpss <- ur.kpss(serie)
+
+  tibble(
+    `Transformação`  = nome,
+    d_simples      = d,
+    D_sazonal      = D,
+    ADF_pvalue     = teste_adf$p.value,
+    KPSS_Stat      = teste_kpss@teststat[1],
+    KPSS_Crit_5pct = teste_kpss@cval[1, "5pct"]
+  )
+}
+
+tabela_estacionariedade <- bind_rows(
+  tabela_testes(dados$n, d = 0, D = 0, "Série Original"),
+  tabela_testes(diff(dados$n, lag = 1), d = 1, D = 0, "Diferença Simples"),
+  tabela_testes(diff(dados$n, lag = 12), d = 0, D = 1, "Diferença Sazonal"),
+  tabela_testes(diff(diff(dados$n, lag = 12), lag = 1), d = 1, D = 1, "Diferença Dupla")
+)
+
+print(tabela_estacionariedade)
+```
+
+## Parâmetros do SARIMA (uma diferença simples)
+
+```{r}
+#| warning: false
+dados |> 
+  gg_tsdisplay(
+    difference(n, 1),
+    plot_type = "partial",
+    lag_max = 36
+  )
+```
+
+
+## Parâmetros do SARIMA (duas diferenças)
+
+```{r}
+dados |> 
+  gg_tsdisplay(
+    difference(n, 1) |> difference(12),
+    plot_type = "partial",
+    lag_max = 36
+  )
 ```
 
 ## Comparação: uma vs. duas diferenças (RMSE)
@@ -152,14 +259,16 @@ dados |> autoplot(difference(difference(n, 1), 12))
 
 modelos_arima_todos <- treinamento |> 
   model(
-    auto1   = ARIMA(n ~ pdq(1, 1, 1) + PDQ(2, 0, 0)),
+    auto1   = ARIMA(n ~ pdq(1, 1, 1) + PDQ(2, 0, 0)), # auto.arima
     auto2   = ARIMA(n),
     arima1  = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
     arima2  = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
     best2   = ARIMA(n ~ 0 + pdq(2, 0, 2) + PDQ(2, 1, 2)),
     best    = ARIMA(n ~ 0 + pdq(2, 0, 1) + PDQ(2, 1, 2)),
     best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
-    auto3   = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
+    auto3   = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2)), # auto.arima com 2 diferenças
+    arima3  = ARIMA(n ~ pdq(1, 1, 1) + PDQ(2, 0, 1))# ,
+    #arima4  = ARIMA(n ~ pdq(2, 1, 1) + PDQ(2, 1, 1))
   )
 
 fc_arimas_todos <- modelos_arima_todos |> 
@@ -178,21 +287,7 @@ accuracy(fc_arimas_todos, dados) |>
   arrange(RMSE)
 ```
 
-## ACF e PACF do modelo escolhido
-
-```{r}
-#| label: acf-pacf-escolhido
-#| echo: false
-
-dados |> 
-  gg_tsdisplay(
-    difference(n, 1) |> difference(12),
-    plot_type = "partial",
-    lag_max = 36
-  )
-```
-
-## Ajuste do modelo ARIMA
+## Comparações (AICc)
 
 ```{r}
 #| label: arima-ajuste
@@ -201,38 +296,35 @@ dados |>
 modelos_reduzidos <- treinamento |> 
   model(
     arima1  = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
-    arima2  = ARIMA(n ~ pdq(0,1,1) + PDQ(2, 1, 1)),
     best2ad = ARIMA(n ~ 0 + pdq(2, 1, 2) + PDQ(2, 1, 2)),
     auto3   = ARIMA(n ~ pdq(0, 1, 2) + PDQ(2, 1, 2))
   )
 
-ordens <- modelos_reduzidos |> 
+ordens <- modelos_arima_todos |> 
   pivot_longer(everything(), names_to = ".model", values_to = "ajuste") |> 
   mutate(ordem = map_chr(ajuste, model_sum)) |> 
   as_tibble() |> 
   select(.model, ordem)
 
-modelos_reduzidos |> 
+modelos_arima_todos |> 
   glance() |> 
   left_join(ordens, by = ".model") |> 
-  select(.model, ordem, AICc, BIC, sigma2) |> 
+  select(.model, ordem, AICc, BIC) |> 
   arrange(AICc)
 ```
 
-::: {.notes}
-Aqui o AICc é válido: todos os modelos têm d=1 e D=1 (mesma ordem de diferenciação),
-diferindo apenas em p, q, P, Q.
-auto3 venceu com o menor AICc.
+::: notes
+Aqui o AICc é válido: todos os modelos têm d=1 e D=1 (mesma ordem de diferenciação), diferindo apenas em p, q, P, Q. auto3 venceu com o menor AICc.
+não
 :::
 
-## Por que ARIMA(0,1,2)(2,1,2)?
+## Por que SARIMA(1,1,1)(2,1,1)?
 
-::: {.incremental}
-- RMSE definiu a diferenciação
-- Menor AICc entre os candidatos
-- Por que usar o AICc como críterio de decisão?
-- Mesma diferenciação (d=1, D=1)
-- Penaliza modelos excessivamente complexos (parcimônia)
+::: incremental
+- Menor RMSE
+- AICc próximo dos outros
+- Por que usar o RMSE como críterio de decisão?
+- Compara as previsões do modelo com os dados reais.
 :::
 
 ## Seleção do modelo: acurácia fora da amostra
@@ -242,20 +334,20 @@ auto3 venceu com o menor AICc.
 #| echo: false
 
 melhor_modelo_arima <- modelos_reduzidos |> select(arima1)
-melhor_modelo_ets <- ajustes_reduzidos |> select(mna)
+melhor_modelo_ets <- ajustes_reduzidos |> select(mnm)
 
 ajuste_final <- treinamento |> 
   model(
-    arima1 = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
-    mna = ETS(n ~ error("M") + trend("N") + season("A"))
+    arima1  = ARIMA(n ~ pdq(1,1,1) + PDQ(2, 1, 1)),
+    mnm = ETS(n ~ error("M") + trend("N") + season("M"))
   )
 
 fc_final <- ajuste_final |> forecast(h = "2 years")
 
-accuracy(fc_final, dados) |> arrange(RMSE)
+accuracy(fc_final, dados) |> select(.model, .type, RMSE) |>  arrange(RMSE)
 ```
 
-## Diagnóstico dos resíduos
+## Diagnóstico dos resíduos (SARIMA)
 
 ```{r}
 #| label: residuos
@@ -265,18 +357,37 @@ melhor_modelo_arima |>
   gg_tsresiduals(lag_max = 36)
 ```
 
-## Teste de Ljung-Box e Shapiro-Wilk
+## Diagnóstico dos resíduos (ETS)
+
+```{r}
+melhor_modelo_ets |> 
+  gg_tsresiduals(lag_max = 36)
+```
+
+## Teste de Ljung-Box e Shapiro-Wilk (SARIMA)
 
 ```{r}
 #| label: testes-residuos
 #| echo: false
 
-modelos_reduzidos |> augment() |>
-  filter(.model == "arima1") |> 
+ajuste_final |> augment() |>
+  dplyr::filter(.model == "arima1") |> 
   features(.innov, ljung_box, lag = 24, dof = 5)
 
 shapiro.test((melhor_modelo_arima |> augment())$.innov)
 ```
+
+## Teste de Ljung-Box e Shapiro-Wilk (ETS)
+
+```{r}
+ajuste_final |> augment() |>
+  dplyr::filter(.model == "mnm") |> 
+  features(.innov, ljung_box, lag = 24, dof = 2)
+
+shapiro.test((melhor_modelo_ets |> augment())$.innov)
+```
+
+* Escolha, SARIMA(1,1,1)(2,1,1)
 
 ## Previsão
 
@@ -290,7 +401,7 @@ melhor_modelo_geral <- dados |>
   )
 
 melhor_modelo_geral |> 
-  forecast(h = "4 years") |> 
+  forecast(h = "2 years") |> 
   autoplot(dados)
 ```
 
