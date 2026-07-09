@@ -149,9 +149,24 @@ Adryãn e Christian
 </section>
 <section id="contextualização" class="slide level2">
 <h2>Contextualização</h2>
+<ul>
+<li class="fragment">Setor aéreo: indicador relevante de atividade econômica e mobilidade</li>
+<li class="fragment">Fonte dos dados: <strong>ANAC</strong> (Agência Nacional de Aviação Civil)</li>
+<li class="fragment">Base histórica com elevado grau de detalhamento sobre voos, passageiros e etapas, disponibilizada desde 2000</li>
+<li class="fragment">Previsão de demanda: apoia planejamento de capacidade aeroportuária e das empresas aéreas</li>
+</ul>
 </section>
 <section id="objetivos" class="slide level2">
 <h2>Objetivos</h2>
+<ul>
+<li class="fragment"><strong>Geral</strong>: modelar e prever a série mensal de voos no Brasil</li>
+<li class="fragment"><strong>Específicos</strong>:
+<ul>
+<li class="fragment">Comparar modelos ETS e SARIMA</li>
+<li class="fragment">Selecionar o modelo com melhor desempenho preditivo</li>
+<li class="fragment">Validar adequação via diagnóstico de resíduos</li>
+</ul></li>
+</ul>
 </section></section>
 <section>
 <section id="metodologia" class="title-slide slide level1 center">
@@ -167,14 +182,6 @@ Adryãn e Christian
 <li class="fragment">Treinamento: 2000–2017</li>
 <li class="fragment">Teste: 2018–2019</li>
 </ul></li>
-</ul>
-</section>
-<section id="transformação-da-série" class="slide level2">
-<h2>Transformação da série</h2>
-<ul>
-<li class="fragment">Investigada necessidade de estabilizar a variância</li>
-<li class="fragment">Método de Guerrero <span class="math inline">\(\rightarrow\)</span> <span class="math inline">\(\lambda = 1.85\)</span></li>
-<li class="fragment">Optou-se por <strong>não transformar</strong> a série</li>
 </ul>
 </section>
 <section id="ajuste-do-modelo-ets" class="slide level2">
@@ -194,12 +201,15 @@ Adryãn e Christian
 <section id="ajuste-do-modelo-arima" class="slide level2">
 <h2>Ajuste do modelo ARIMA</h2>
 <ul>
-<li class="fragment">Testes de raiz unitária: <strong>ADF</strong> e <strong>KPSS</strong></li>
-<li class="fragment">Série exigiu 2 diferenciações
+<li class="fragment">Verificação da estacionariedade da série
 <ul>
-<li class="fragment">1 diferença simples + 1 diferença sazonal</li>
+<li class="fragment">Testes ADF e KPSS</li>
 </ul></li>
-<li class="fragment">ACF/PACF da série diferenciada <span class="math inline">\(\rightarrow\)</span> identificação de <span class="math inline">\(p, q, P, Q\)</span></li>
+<li class="fragment">Determinação das diferenciações (<span class="math inline">\(d\)</span> e <span class="math inline">\(D\)</span>)</li>
+<li class="fragment">Identificação das ordens <span class="math inline">\((p,q,P,Q)\)</span>
+<ul>
+<li class="fragment">Análise das funções ACF e PACF</li>
+</ul></li>
 </ul>
 </section>
 <section id="modelo-sarimapdqpdq_m" class="slide level2">
@@ -247,6 +257,10 @@ Adryãn e Christian
 <h2>Comportamento sazonal</h2>
 
 <img data-src="slides_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
+<section id="comportamento-sazonal-2" class="slide level2">
+<h2>Comportamento sazonal</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"></section>
 <section id="autocorrelação" class="slide level2">
 <h2>Autocorrelação</h2>
 
@@ -334,7 +348,7 @@ ana ETS(A,N,A)</code></pre>
 <section id="uma-diferença-simples" class="slide level2">
 <h2>Uma diferença simples</h2>
 
-<img data-src="slides_files/figure-revealjs/unnamed-chunk-5-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-6-1.png" width="960" class="r-stretch"></section>
 <section id="uma-diferença-sazonal" class="slide level2">
 <h2>Uma diferença sazonal</h2>
 
@@ -346,25 +360,64 @@ ana ETS(A,N,A)</code></pre>
 <section id="testes-de-estacionariedade" class="slide level2">
 <h2>Testes de estacionariedade</h2>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 6
-  Transformação     d_simples D_sazonal ADF_pvalue KPSS_Stat KPSS_Crit_5pct
-  &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt;
-1 Série Original            0         0     0.391     1.20            0.463
-2 Diferença Simples         1         0     0.01      0.0399          0.463
-3 Diferença Sazonal         0         1     0.0806    0.158           0.463
-4 Diferença Dupla           1         1     0.01      0.0218          0.463</code></pre>
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Transformação</th>
+<th style="text-align: center;">d</th>
+<th style="text-align: center;">D</th>
+<th style="text-align: center;">ADF (p-valor)</th>
+<th style="text-align: center;">KPSS</th>
+<th style="text-align: left;">KPSS crít. 5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Série Original</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0.391</td>
+<td style="text-align: center;">1.204</td>
+<td style="text-align: left;">0.463</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Diferença Simples</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0.010</td>
+<td style="text-align: center;">0.040</td>
+<td style="text-align: left;">0.463</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Diferença Sazonal</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0.081</td>
+<td style="text-align: center;">0.158</td>
+<td style="text-align: left;">0.463</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Diferença Dupla</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0.010</td>
+<td style="text-align: center;">0.022</td>
+<td style="text-align: left;">0.463</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
 <section id="parâmetros-do-sarima-uma-diferença-simples" class="slide level2">
 <h2>Parâmetros do SARIMA (uma diferença simples)</h2>
 
-<img data-src="slides_files/figure-revealjs/unnamed-chunk-7-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
 <section id="parâmetros-do-sarima-duas-diferenças" class="slide level2">
 <h2>Parâmetros do SARIMA (duas diferenças)</h2>
 
-<img data-src="slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-9-1.png" width="960" class="r-stretch"></section>
 <section id="comparação-uma-vs.-duas-diferenças-rmse" class="slide level2">
 <h2>Comparação: uma vs.&nbsp;duas diferenças (RMSE)</h2>
 <div class="cell">
@@ -439,10 +492,28 @@ ana ETS(A,N,A)</code></pre>
 </section>
 <section id="modelo-final-sarima111211_12" class="slide level2">
 <h2>Modelo final: SARIMA(1,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span></h2>
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- &(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t = \\ -->
+<!-- &\quad (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12}+\hat\Theta_2 B^{24})\,\hat\varepsilon_t --
+<!-- \end{aligned} -->
+<!-- $$ -->
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 6
+  .model term  estimate std.error statistic  p.value
+  &lt;chr&gt;  &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+1 arima1 ar1     0.337     0.139      2.44  1.57e- 2
+2 arima1 ma1    -0.671     0.106     -6.33  1.52e- 9
+3 arima1 sar1   -0.0319    0.100     -0.319 7.50e- 1
+4 arima1 sar2   -0.146     0.0937    -1.56  1.21e- 1
+5 arima1 sma1   -0.794     0.0888    -8.94  2.43e-16</code></pre>
+</div>
+</div>
 <p><span class="math display">\[
 \begin{aligned}
-&amp;(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t = \\
-&amp;\quad (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12}+\hat\Theta_2 B^{24})\,\hat\varepsilon_t
+&amp;(1 - 0.337 B)(1 + 0.0319 B^{12} + 0.146 B^{24})(1-B)(1-B^{12})\,y_t = \\
+&amp;\quad (1 - 0.671 B)(1 - 0.794 B^{12})\,\hat\varepsilon_t
 \end{aligned}
 \]</span></p>
 </section>
@@ -453,7 +524,7 @@ ana ETS(A,N,A)</code></pre>
 <section id="diagnóstico-dos-resíduos-ets" class="slide level2">
 <h2>Diagnóstico dos resíduos (ETS)</h2>
 
-<img data-src="slides_files/figure-revealjs/unnamed-chunk-9-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-11-1.png" width="960" class="r-stretch"></section>
 <section id="teste-de-ljung-box-e-shapiro-wilk-sarima" class="slide level2">
 <h2>Teste de Ljung-Box e Shapiro-Wilk (SARIMA)</h2>
 <div class="cell">
