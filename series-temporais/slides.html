@@ -6,8 +6,8 @@
 <script src="slides_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="slides_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.9.38">
+<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.37">
 
   <meta name="author" content="Adryãn e Christian">
   <title>Séries de Voos: Modelagem e Previsão com ETS e ARIMA</title>
@@ -160,12 +160,75 @@ Adryãn e Christian
 </section>
 <section id="modelos-utilizados-ets-e-arima" class="slide level2">
 <h2>Modelos utilizados: ETS e ARIMA</h2>
+<ul>
+<li class="fragment">Duas classes de modelos: <strong>ETS</strong> (suavização exponencial) e <strong>ARIMA</strong> (SARIMA)</li>
+<li class="fragment">Série particionada em treinamento e teste
+<ul>
+<li class="fragment">Treinamento: 2000–2017</li>
+<li class="fragment">Teste: 2018–2019</li>
+</ul></li>
+</ul>
 </section>
-<section id="ajuste-dos-modelos" class="slide level2">
-<h2>Ajuste dos modelos</h2>
+<section id="transformação-da-série" class="slide level2">
+<h2>Transformação da série</h2>
+<ul>
+<li class="fragment">Investigada necessidade de estabilizar a variância</li>
+<li class="fragment">Método de Guerrero <span class="math inline">\(\rightarrow\)</span> <span class="math inline">\(\lambda = 1.85\)</span></li>
+<li class="fragment">Optou-se por <strong>não transformar</strong> a série</li>
+</ul>
 </section>
-<section id="seleção-do-modelo-aic-e-reqm-rmse" class="slide level2">
-<h2>Seleção do modelo: AIC e REQM (RMSE)</h2>
+<section id="ajuste-do-modelo-ets" class="slide level2">
+<h2>Ajuste do modelo ETS</h2>
+<ul>
+<li class="fragment">Baseado no comportamento exploratório da série
+<ul>
+<li class="fragment">Sem tendência clara</li>
+<li class="fragment">Sazonalidade de magnitude <span class="math inline">\(\sim\)</span> constante</li>
+</ul></li>
+<li class="fragment">Espaço de modelos testados incluiu:
+<ul>
+<li class="fragment">ETS(M,N,A), ETS(M,N,M), ETS(A,N,A)</li>
+</ul></li>
+</ul>
+</section>
+<section id="ajuste-do-modelo-arima" class="slide level2">
+<h2>Ajuste do modelo ARIMA</h2>
+<ul>
+<li class="fragment">Testes de raiz unitária: <strong>ADF</strong> e <strong>KPSS</strong></li>
+<li class="fragment">Série exigiu 2 diferenciações
+<ul>
+<li class="fragment">1 diferença simples + 1 diferença sazonal</li>
+</ul></li>
+<li class="fragment">ACF/PACF da série diferenciada <span class="math inline">\(\rightarrow\)</span> identificação de <span class="math inline">\(p, q, P, Q\)</span></li>
+</ul>
+</section>
+<section id="modelo-sarimapdqpdq_m" class="slide level2">
+<h2>Modelo SARIMA<span class="math inline">\((p,d,q)(P,D,Q)_m\)</span></h2>
+<p><span class="math display">\[
+\phi(B)\,\Phi(B^m)\,(1-B)^d(1-B^m)^D y_t = c + \theta(B)\,\Theta(B^m)\,\varepsilon_t
+\]</span></p>
+<ul>
+<li class="fragment"><span class="math inline">\(\phi(B), \theta(B)\)</span>: polinômios AR e MA não sazonais</li>
+<li class="fragment"><span class="math inline">\(\Phi(B^m), \Theta(B^m)\)</span>: polinômios AR e MA sazonais</li>
+<li class="fragment"><span class="math inline">\(m\)</span>: número de observações por ano (aqui, <span class="math inline">\(m = 12\)</span>)</li>
+</ul>
+</section>
+<section id="seleção-do-modelo-aic-e-reqm" class="slide level2">
+<h2>Seleção do modelo: AIC e REQM</h2>
+<ul>
+<li class="fragment">Modelos candidatos avaliados por <strong>AICc</strong> e <strong>BIC</strong></li>
+<li class="fragment">Seleção final (ETS vs.&nbsp;ARIMA) por <strong>REQM (RMSE)</strong> fora da amostra</li>
+<li class="fragment">Critério decisivo: melhor desempenho preditivo no conjunto de teste</li>
+<li class="fragment">Modelo final: <strong>SARIMA(1,1,1)(2,1,1)</strong></li>
+</ul>
+</section>
+<section id="diagnóstico-dos-modelos" class="slide level2">
+<h2>Diagnóstico dos modelos</h2>
+<ul>
+<li class="fragment">Resíduos de inovação avaliados quanto a ruído branco</li>
+<li class="fragment">Inspeção visual: gráficos ACF dos resíduos</li>
+<li class="fragment">Testes formais: <strong>Ljung-Box</strong> e <strong>Shapiro-Wilk</strong></li>
+</ul>
 </section></section>
 <section>
 <section id="resultados" class="title-slide slide level1 center">
@@ -202,7 +265,7 @@ Adryãn e Christian
 <li>Sem transformação.</li>
 </ul>
 </section>
-<section id="ajuste-do-modelo-ets" class="slide level2">
+<section id="ajuste-do-modelo-ets-1" class="slide level2">
 <h2>Ajuste do modelo ETS</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -373,6 +436,15 @@ ana ETS(A,N,A)</code></pre>
 2 mnm    Test   244.</code></pre>
 </div>
 </div>
+</section>
+<section id="modelo-final-sarima111211_12" class="slide level2">
+<h2>Modelo final: SARIMA(1,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span></h2>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t = \\
+&amp;\quad (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12}+\hat\Theta_2 B^{24})\,\hat\varepsilon_t
+\end{aligned}
+\]</span></p>
 </section>
 <section id="diagnóstico-dos-resíduos-sarima" class="slide level2">
 <h2>Diagnóstico dos resíduos (SARIMA)</h2>

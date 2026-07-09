@@ -7,6 +7,8 @@ format:
     slide-number: true
     transition: fade
     toc: false
+  beamer:
+    toc: false
 editor: visual
 execute:
   cache: true
@@ -53,9 +55,68 @@ rm(anos_slice)
 
 ## Modelos utilizados: ETS e ARIMA
 
-## Ajuste dos modelos
+::: {.incremental}
+- Duas classes de modelos: **ETS** (suavização exponencial) e **ARIMA** (SARIMA)
+- Série particionada em treinamento e teste
+  - Treinamento: 2000–2017
+  - Teste: 2018–2019
+:::
 
-## Seleção do modelo: AIC e REQM (RMSE)
+## Transformação da série
+
+::: {.incremental}
+- Investigada necessidade de estabilizar a variância
+- Método de Guerrero $\rightarrow$ $\lambda = 1.85$
+- Optou-se por **não transformar** a série
+:::
+
+## Ajuste do modelo ETS
+
+::: {.incremental}
+- Baseado no comportamento exploratório da série
+  - Sem tendência clara
+  - Sazonalidade de magnitude $\sim$ constante
+- Espaço de modelos testados incluiu:
+  - ETS(M,N,A), ETS(M,N,M), ETS(A,N,A)
+:::
+
+## Ajuste do modelo ARIMA
+
+::: {.incremental}
+- Testes de raiz unitária: **ADF** e **KPSS**
+- Série exigiu 2 diferenciações
+  - 1 diferença simples + 1 diferença sazonal
+- ACF/PACF da série diferenciada $\rightarrow$ identificação de $p, q, P, Q$
+:::
+
+## Modelo SARIMA$(p,d,q)(P,D,Q)_m$
+
+$$
+\phi(B)\,\Phi(B^m)\,(1-B)^d(1-B^m)^D y_t = c + \theta(B)\,\Theta(B^m)\,\varepsilon_t 
+$$
+
+::: {.incremental}
+- $\phi(B), \theta(B)$: polinômios AR e MA não sazonais
+- $\Phi(B^m), \Theta(B^m)$: polinômios AR e MA sazonais
+- $m$: número de observações por ano (aqui, $m = 12$)
+:::
+
+## Seleção do modelo: AIC e REQM
+
+::: {.incremental}
+- Modelos candidatos avaliados por **AICc** e **BIC**
+- Seleção final (ETS vs. ARIMA) por **REQM (RMSE)** fora da amostra
+- Critério decisivo: melhor desempenho preditivo no conjunto de teste
+- Modelo final: **SARIMA(1,1,1)(2,1,1)**
+:::
+
+## Diagnóstico dos modelos
+
+::: {.incremental}
+- Resíduos de inovação avaliados quanto a ruído branco
+- Inspeção visual: gráficos ACF dos resíduos
+- Testes formais: **Ljung-Box** e **Shapiro-Wilk**
+:::
 
 # Resultados
 
@@ -346,6 +407,15 @@ fc_final <- ajuste_final |> forecast(h = "2 years")
 
 accuracy(fc_final, dados) |> select(.model, .type, RMSE) |>  arrange(RMSE)
 ```
+
+## Modelo final: SARIMA(1,1,1)(2,1,1)$_{12}$
+
+$$
+\begin{aligned}
+&(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t = \\
+&\quad (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12}+\hat\Theta_2 B^{24})\,\hat\varepsilon_t
+\end{aligned}
+$$
 
 ## Diagnóstico dos resíduos (SARIMA)
 

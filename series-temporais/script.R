@@ -75,7 +75,7 @@ accuracy(fit)
 # 2. Metodologia
 # 
 # Como os objetivos serão atendidos?
-#   
+# 
 #   Quais modelos serão utilizados (ETS e ARIMA)
 # 
 # Como os modelos serão ajustados
@@ -83,7 +83,7 @@ accuracy(fit)
 # Como será feita a seleção do modelo (AIC e REQM)
 # 
 # 3. Resultados
-# 
+#       
 # Análise descritiva dos dados
 # 
 # Ajuste dos modelos ETS e ARIMA
@@ -97,11 +97,11 @@ accuracy(fit)
 # 4. Conclusões
 # 
 # O que foi feito neste trabalho? Quais resultados foram obtidos?
-#   
+# 
 #   Os objetivos da introdução foram atingidos?
-#   
+# 
 #   Qual a importância dos resultados obtidos?
-#   
+# 
 #   Sugestões para trabalhos futuros.
 # 
 # 5. Referências
