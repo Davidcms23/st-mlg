@@ -9,7 +9,7 @@
 <link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.37">
 
-  <meta name="author" content="Adryãn e Christian">
+  <meta name="author" content="Adryãn Lucas Santos e Christian David M. Souza">
   <title>Séries de Voos: Modelagem e Previsão com ETS e ARIMA</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -136,7 +136,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Adryãn e Christian 
+Adryãn Lucas Santos e Christian David M. Souza 
 </div>
 </div>
 </div>
@@ -176,7 +176,7 @@ Adryãn e Christian
 <section id="modelos-utilizados-ets-e-arima" class="slide level2">
 <h2>Modelos utilizados: ETS e ARIMA</h2>
 <ul>
-<li class="fragment">Duas classes de modelos: <strong>ETS</strong> (suavização exponencial) e <strong>ARIMA</strong> (SARIMA)</li>
+<li class="fragment">Duas classes de modelos: <strong>ETS</strong> (suavização exponencial) e <strong>SARIMA</strong></li>
 <li class="fragment">Série particionada em treinamento e teste
 <ul>
 <li class="fragment">Treinamento: 2000–2017</li>
@@ -201,43 +201,28 @@ Adryãn e Christian
 <section id="ajuste-do-modelo-arima" class="slide level2">
 <h2>Ajuste do modelo ARIMA</h2>
 <ul>
-<li class="fragment">Verificação da estacionariedade da série
+<li class="fragment">Verificação da estacionariedade (testes ADF e KPSS)</li>
+<li class="fragment">Determinação das diferenciações <span class="math inline">\(d\)</span> e <span class="math inline">\(D\)</span></li>
+<li class="fragment">Identificação de <span class="math inline">\((p,q,P,Q)\)</span> via ACF/PACF</li>
+<li class="fragment">Espaço de modelos testados incluiu:
 <ul>
-<li class="fragment">Testes ADF e KPSS</li>
-</ul></li>
-<li class="fragment">Determinação das diferenciações (<span class="math inline">\(d\)</span> e <span class="math inline">\(D\)</span>)</li>
-<li class="fragment">Identificação das ordens <span class="math inline">\((p,q,P,Q)\)</span>
-<ul>
-<li class="fragment">Análise das funções ACF e PACF</li>
+<li class="fragment">SARIMA(1,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span>, SARIMA(0,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span></li>
+<li class="fragment">SARIMA(0,1,2)(2,1,2)<span class="math inline">\(_{12}\)</span>, SARIMA(2,1,2)(2,1,2)<span class="math inline">\(_{12}\)</span></li>
 </ul></li>
 </ul>
-</section>
-<section id="modelo-sarimapdqpdq_m" class="slide level2">
-<h2>Modelo SARIMA<span class="math inline">\((p,d,q)(P,D,Q)_m\)</span></h2>
 <p><span class="math display">\[
-\phi(B)\,\Phi(B^m)\,(1-B)^d(1-B^m)^D y_t = c + \theta(B)\,\Theta(B^m)\,\varepsilon_t
+\begin{aligned}
+&amp;(1-\phi_1 B)(1-\Phi_1 B^{12}-\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t \\[2pt]
+&amp;= (1+\theta_1 B)(1+\Theta_1 B^{12})\,\varepsilon_t
+\end{aligned}
 \]</span></p>
-<ul>
-<li class="fragment"><span class="math inline">\(\phi(B), \theta(B)\)</span>: polinômios AR e MA não sazonais</li>
-<li class="fragment"><span class="math inline">\(\Phi(B^m), \Theta(B^m)\)</span>: polinômios AR e MA sazonais</li>
-<li class="fragment"><span class="math inline">\(m\)</span>: número de observações por ano (aqui, <span class="math inline">\(m = 12\)</span>)</li>
-</ul>
 </section>
 <section id="seleção-do-modelo-aic-e-reqm" class="slide level2">
 <h2>Seleção do modelo: AIC e REQM</h2>
 <ul>
-<li class="fragment">Modelos candidatos avaliados por <strong>AICc</strong> e <strong>BIC</strong></li>
-<li class="fragment">Seleção final (ETS vs.&nbsp;ARIMA) por <strong>REQM (RMSE)</strong> fora da amostra</li>
-<li class="fragment">Critério decisivo: melhor desempenho preditivo no conjunto de teste</li>
-<li class="fragment">Modelo final: <strong>SARIMA(1,1,1)(2,1,1)</strong></li>
-</ul>
-</section>
-<section id="diagnóstico-dos-modelos" class="slide level2">
-<h2>Diagnóstico dos modelos</h2>
-<ul>
-<li class="fragment">Resíduos de inovação avaliados quanto a ruído branco</li>
-<li class="fragment">Inspeção visual: gráficos ACF dos resíduos</li>
-<li class="fragment">Testes formais: <strong>Ljung-Box</strong> e <strong>Shapiro-Wilk</strong></li>
+<li class="fragment">Candidatos avaliados por <strong>AICc</strong> e <strong>BIC</strong></li>
+<li class="fragment">Seleção final (ETS vs.&nbsp;ARIMA) por <strong>REQM</strong> fora da amostra</li>
+<li class="fragment">Validação: diagnóstico de resíduos (Ljung-Box, Shapiro-Wilk)</li>
 </ul>
 </section></section>
 <section>
@@ -477,6 +462,12 @@ ana ETS(A,N,A)</code></pre>
 <li class="fragment">Por que usar o RMSE como críterio de decisão?</li>
 <li class="fragment">Compara as previsões do modelo com os dados reais.</li>
 </ul>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t \\[2pt]
+&amp;= (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12})\,\hat\varepsilon_t
+\end{aligned}
+\]</span></p>
 </section>
 <section id="seleção-do-modelo-acurácia-fora-da-amostra" class="slide level2">
 <h2>Seleção do modelo: acurácia fora da amostra</h2>
@@ -564,6 +555,25 @@ W = 0.98121, p-value = 0.005599</code></pre>
 <li>Escolha, SARIMA(1,1,1)(2,1,1)</li>
 </ul>
 </section>
+<section id="modelo-de-previsão" class="slide level2">
+<h2>Modelo de Previsão</h2>
+<ul>
+<li class="fragment">Para gerar previsões, o modelo é reescrito com <span class="math inline">\(y_t\)</span> em evidência</li>
+<li class="fragment">Cada previsão usa valores passados de <span class="math inline">\(y\)</span> e resíduos estimados</li>
+<li class="fragment">Ilustração com <span class="math inline">\(P=1\)</span> (caso mais simples que o modelo final)</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+y_t = {}&amp;(1+\phi_1)y_{t-1} - \phi_1 y_{t-2} + (1+\Phi_1) y_{t-12} \\
+&amp;- (1+\phi_1+\Phi_1+\phi_1\Phi_1) y_{t-13} + (\phi_1+\phi_1\Phi_1) y_{t-14} \\
+&amp;- \Phi_1 y_{t-24} + (\Phi_1+\phi_1\Phi_1) y_{t-25} - \phi_1\Phi_1 y_{t-26} \\
+&amp;+ \varepsilon_t + \theta_1\varepsilon_{t-1} + \Theta_1\varepsilon_{t-12} + \theta_1\Theta_1\varepsilon_{t-13}
+\end{aligned}
+\]</span></p>
+<ul>
+<li class="fragment">No modelo final (<span class="math inline">\(P=2\)</span>), o princípio é o mesmo, só com mais termos defasados</li>
+</ul>
+</section>
 <section id="previsão" class="slide level2">
 <h2>Previsão</h2>
 
@@ -573,16 +583,62 @@ W = 0.98121, p-value = 0.005599</code></pre>
 <h1>Conclusões</h1>
 
 </section>
-<section id="síntese-dos-resultados" class="slide level2">
-<h2>Síntese dos resultados</h2>
+<section id="síntese-do-trabalho" class="slide level2">
+<h2>Síntese do trabalho</h2>
+<ul>
+<li class="fragment">Modelagem da série mensal de voos no Brasil (2000–2019, ANAC)</li>
+<li class="fragment">Comparação entre modelos <strong>ETS</strong> e <strong>SARIMA</strong></li>
+<li class="fragment">Modelo final: <strong>SARIMA(1,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span></strong></li>
+<li class="fragment">Seleção baseada em REQM fora da amostra</li>
+</ul>
+</section>
+<section id="objetivos-atingidos" class="slide level2">
+<h2>Objetivos atingidos</h2>
+<ul>
+<li class="fragment">Modelos ETS e SARIMA ajustados e comparados</li>
+<li class="fragment">Melhor modelo selecionado com critério objetivo (REQM)</li>
+<li class="fragment">Resíduos sem autocorrelação residual
+<ul>
+<li class="fragment">Ljung-Box: <span class="math inline">\(p = 0{,}579\)</span></li>
+</ul></li>
+<li class="fragment">Distribuição dos resíduos assimétrica
+<ul>
+<li class="fragment">Shapiro-Wilk: <span class="math inline">\(p = 0{,}003\)</span></li>
+<li class="fragment">Afeta levemente a calibragem dos intervalos de previsão</li>
+</ul></li>
+</ul>
+</section>
+<section id="relevância-dos-resultados" class="slide level2">
+<h2>Relevância dos resultados</h2>
+<ul>
+<li class="fragment">Previsão confiável apoia planejamento de capacidade aeroportuária</li>
+<li class="fragment">Modelo capta padrão sazonal e tendência da série</li>
+<li class="fragment">Abordagem replicável para outras séries do setor aéreo</li>
+</ul>
 </section>
 <section id="sugestões-para-trabalhos-futuros" class="slide level2">
 <h2>Sugestões para trabalhos futuros</h2>
+<ul>
+<li class="fragment">Testar modelos com ajuste sazonal semestral</li>
+<li class="fragment">Incluir efeito da pandemia (dados pós-2020)</li>
+<li class="fragment">Testar modelos com variáveis exógenas (ex.: combustível, câmbio)</li>
+<li class="fragment">Comparar com modelos de aprendizado de máquina</li>
+</ul>
 </section></section>
+<section>
 <section id="referências" class="title-slide slide level1 center">
 <h1>Referências</h1>
 
 </section>
+<section id="referências-1" class="slide level2">
+<h2>Referências</h2>
+<ul>
+<li><p><strong>Livro-Texto Base:</strong> HYNDMAN, Rob J.; ATHANASOPOULOS, George. <strong>Forecasting: principles and practice</strong>. 3. ed.&nbsp;Melbourne: OTexts, 2021. Disponível em: <a href="https://otexts.com/fpp3/" class="uri">https://otexts.com/fpp3/</a>.</p></li>
+<li><p><strong>Material Didático:</strong> SIROKY, Andressa. <strong>Análise de Séries Temporais</strong>: Notas de aula e slides da disciplina. Natal: Departamento de Estatística, Universidade Federal do Rio Grande do Norte (UFRN), 2026.</p></li>
+<li><p><strong>Fonte de Dados:</strong> AGÊNCIA NACIONAL DE AVIAÇÃO CIVIL (ANAC). <strong>Dados Estatísticos do Transporte Aéreo</strong>. Brasília: ANAC, 2024. Disponível em: <a href="https://sistemas.anac.gov.br/dadosabertos/" class="uri">https://sistemas.anac.gov.br/dadosabertos/</a>.</p></li>
+</ul>
+
+</section></section>
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <div class="footer footer-default">

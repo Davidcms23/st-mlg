@@ -1,7 +1,7 @@
 ---
 title: "Séries de Voos: Modelagem e Previsão com ETS e ARIMA"
 subtitle: "Análise da série temporal de voos"
-author: "Adryãn e Christian"
+author: "Adryãn Lucas Santos e Christian David M. Souza"
 format:
   revealjs:
     slide-number: true
@@ -9,11 +9,13 @@ format:
     toc: false
   beamer:
     toc: false
+    include-in-header:
+      text: |
+        \setbeamertemplate{footline}[frame number]
 editor: visual
 execute:
   cache: true
 ---
-
 ```{r}
 #| label: preparacao
 #| echo: false
@@ -71,7 +73,7 @@ rm(anos_slice)
 ## Modelos utilizados: ETS e ARIMA
 
 ::: {.incremental}
-- Duas classes de modelos: **ETS** (suavização exponencial) e **ARIMA** (SARIMA)
+- Duas classes de modelos: **ETS** (suavização exponencial) e **SARIMA**
 - Série particionada em treinamento e teste
   - Treinamento: 2000–2017
   - Teste: 2018–2019
@@ -90,40 +92,27 @@ rm(anos_slice)
 ## Ajuste do modelo ARIMA
 
 ::: {.incremental}
-- Verificação da estacionariedade da série
-  - Testes ADF e KPSS
-- Determinação das diferenciações ($d$ e $D$)
-- Identificação das ordens $(p,q,P,Q)$
-  - Análise das funções ACF e PACF
+- Verificação da estacionariedade (testes ADF e KPSS)
+- Determinação das diferenciações $d$ e $D$
+- Identificação de $(p,q,P,Q)$ via ACF/PACF
+- Espaço de modelos testados incluiu:
+  - SARIMA(1,1,1)(2,1,1)$_{12}$, SARIMA(0,1,1)(2,1,1)$_{12}$
+  - SARIMA(0,1,2)(2,1,2)$_{12}$, SARIMA(2,1,2)(2,1,2)$_{12}$
 :::
 
-## Modelo SARIMA$(p,d,q)(P,D,Q)_m$
-
 $$
-\phi(B)\,\Phi(B^m)\,(1-B)^d(1-B^m)^D y_t = c + \theta(B)\,\Theta(B^m)\,\varepsilon_t 
+\begin{aligned}
+&(1-\phi_1 B)(1-\Phi_1 B^{12}-\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t \\[2pt]
+&= (1+\theta_1 B)(1+\Theta_1 B^{12})\,\varepsilon_t
+\end{aligned}
 $$
-
-::: {.incremental}
-- $\phi(B), \theta(B)$: polinômios AR e MA não sazonais
-- $\Phi(B^m), \Theta(B^m)$: polinômios AR e MA sazonais
-- $m$: número de observações por ano (aqui, $m = 12$)
-:::
 
 ## Seleção do modelo: AIC e REQM
 
 ::: {.incremental}
-- Modelos candidatos avaliados por **AICc** e **BIC**
-- Seleção final (ETS vs. ARIMA) por **REQM (RMSE)** fora da amostra
-- Critério decisivo: melhor desempenho preditivo no conjunto de teste
-- Modelo final: **SARIMA(1,1,1)(2,1,1)**
-:::
-
-## Diagnóstico dos modelos
-
-::: {.incremental}
-- Resíduos de inovação avaliados quanto a ruído branco
-- Inspeção visual: gráficos ACF dos resíduos
-- Testes formais: **Ljung-Box** e **Shapiro-Wilk**
+- Candidatos avaliados por **AICc** e **BIC**
+- Seleção final (ETS vs. ARIMA) por **REQM** fora da amostra
+- Validação: diagnóstico de resíduos (Ljung-Box, Shapiro-Wilk)
 :::
 
 # Resultados
@@ -423,6 +412,13 @@ não
 - Compara as previsões do modelo com os dados reais.
 :::
 
+$$
+\begin{aligned}
+&(1-\hat\phi_1 B)(1-\hat\Phi_1 B^{12}-\hat\Phi_2 B^{24})(1-B)(1-B^{12})\,y_t \\[2pt]
+&= (1+\hat\theta_1 B)(1+\hat\Theta_1 B^{12})\,\hat\varepsilon_t
+\end{aligned}
+$$
+
 ## Seleção do modelo: acurácia fora da amostra
 
 ```{r}
@@ -506,6 +502,27 @@ shapiro.test((melhor_modelo_ets |> augment())$.innov)
 
 * Escolha, SARIMA(1,1,1)(2,1,1)
 
+## Modelo de Previsão
+
+::: {.incremental}
+- Para gerar previsões, o modelo é reescrito com $y_t$ em evidência
+- Cada previsão usa valores passados de $y$ e resíduos estimados
+- Ilustração com $P=1$ (caso mais simples que o modelo final)
+:::
+
+$$
+\begin{aligned}
+y_t = {}&(1+\phi_1)y_{t-1} - \phi_1 y_{t-2} + (1+\Phi_1) y_{t-12} \\
+&- (1+\phi_1+\Phi_1+\phi_1\Phi_1) y_{t-13} + (\phi_1+\phi_1\Phi_1) y_{t-14} \\
+&- \Phi_1 y_{t-24} + (\Phi_1+\phi_1\Phi_1) y_{t-25} - \phi_1\Phi_1 y_{t-26} \\
+&+ \varepsilon_t + \theta_1\varepsilon_{t-1} + \Theta_1\varepsilon_{t-12} + \theta_1\Theta_1\varepsilon_{t-13}
+\end{aligned}
+$$
+
+::: {.incremental}
+- No modelo final ($P=2$), o princípio é o mesmo, só com mais termos defasados
+:::
+
 ## Previsão
 
 ```{r}
@@ -524,8 +541,50 @@ melhor_modelo_geral |>
 
 # Conclusões
 
-## Síntese dos resultados
+## Síntese do trabalho
+
+::: {.incremental}
+- Modelagem da série mensal de voos no Brasil (2000–2019, ANAC)
+- Comparação entre modelos **ETS** e **SARIMA**
+- Modelo final: **SARIMA(1,1,1)(2,1,1)$_{12}$**
+- Seleção baseada em REQM fora da amostra
+:::
+
+## Objetivos atingidos
+
+::: {.incremental}
+- Modelos ETS e SARIMA ajustados e comparados
+- Melhor modelo selecionado com critério objetivo (REQM)
+- Resíduos sem autocorrelação residual
+  - Ljung-Box: $p = 0{,}579$
+- Distribuição dos resíduos assimétrica
+  - Shapiro-Wilk: $p = 0{,}003$
+  - Afeta levemente a calibragem dos intervalos de previsão
+:::
+
+## Relevância dos resultados
+
+::: {.incremental}
+- Previsão confiável apoia planejamento de capacidade aeroportuária
+- Modelo capta padrão sazonal e tendência da série
+- Abordagem replicável para outras séries do setor aéreo
+:::
 
 ## Sugestões para trabalhos futuros
 
+::: {.incremental}
+- Testar modelos com ajuste sazonal semestral
+- Incluir efeito da pandemia (dados pós-2020)
+- Testar modelos com variáveis exógenas (ex.: combustível, câmbio)
+- Comparar com modelos de aprendizado de máquina
+:::
+
 # Referências
+
+## Referências
+
+* **Livro-Texto Base:** HYNDMAN, Rob J.; ATHANASOPOULOS, George. **Forecasting: principles and practice**. 3. ed. Melbourne: OTexts, 2021. Disponível em: <https://otexts.com/fpp3/>.
+
+* **Material Didático:** SIROKY, Andressa. **Análise de Séries Temporais**: Notas de aula e slides da disciplina. Natal: Departamento de Estatística, Universidade Federal do Rio Grande do Norte (UFRN), 2026.
+
+* **Fonte de Dados:** AGÊNCIA NACIONAL DE AVIAÇÃO CIVIL (ANAC). **Dados Estatísticos do Transporte Aéreo**. Brasília: ANAC, 2024. Disponível em: <https://sistemas.anac.gov.br/dadosabertos/>.
