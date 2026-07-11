@@ -391,3 +391,24 @@ dados |> autoplot(box_cox(n, dados |>
 
 dados |> autoplot(difference(difference(box_cox(n, dados |> 
                                                   features(n, features = guerrero)), 1), 12))
+
+#modelos_teste <- treinamento |> 
+#  model(
+#    arima1 = ARIMA(box_cox(n, dados |> 
+#                             features(n, features = guerrero) ~ pdq(1,1,1) + PDQ(2, 1, 1)))
+#  )
+
+#shapiro.test((modelos_teste |> augment())$.innov)
+
+ajuste_final |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36)) + labs(x = "Data", y = "Número de voos")
+
+ggseasonplot(serie, polar = TRUE) +
+  labs(
+    title = NULL,
+    x = "Data",
+    y = "Número de Voos",
+    colour = "Anos"
+  ) +
+  guides(colour = guide_legend(ncol = 2))

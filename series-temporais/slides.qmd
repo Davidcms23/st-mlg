@@ -199,9 +199,7 @@ t(ajustes_reduzidos)
 
 * Possibilidade de variância não constante;
 * Falta de tendência clara;
-* Os picos sazonais parecem constante;
-* Ajustes com dados de treinamento (2000-2017);
-* Teste com 2 anos (2018-2019).
+* Os picos sazonais parecem constante.
 
 ## Seleção do modelo ETS
 
@@ -438,6 +436,15 @@ fc_final <- ajuste_final |> forecast(h = "2 years")
 
 accuracy(fc_final, dados) |> select(.model, .type, RMSE) |>  arrange(RMSE)
 ```
+
+## Seleção final: Gráfico de Previsão Teste
+
+```{r}
+ajuste_final |> 
+  forecast(h = "2 years") |> 
+  autoplot(dados |> tail(36)) + labs(x = "Data", y = "Número de voos")
+```
+
 
 ## Modelo final: SARIMA(1,1,1)(2,1,1)$_{12}$
 

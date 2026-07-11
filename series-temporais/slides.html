@@ -6,8 +6,8 @@
 <script src="slides_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="slides_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.9.37">
+<link href="slides_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
 
   <meta name="author" content="Adryãn Lucas Santos e Christian David M. Souza">
   <title>Séries de Voos: Modelagem e Previsão com ETS e ARIMA</title>
@@ -277,9 +277,7 @@ ana ETS(A,N,A)</code></pre>
 <ul>
 <li>Possibilidade de variância não constante;</li>
 <li>Falta de tendência clara;</li>
-<li>Os picos sazonais parecem constante;</li>
-<li>Ajustes com dados de treinamento (2000-2017);</li>
-<li>Teste com 2 anos (2018-2019).</li>
+<li>Os picos sazonais parecem constante.</li>
 </ul>
 </section>
 <section id="seleção-do-modelo-ets" class="slide level2">
@@ -481,6 +479,10 @@ ana ETS(A,N,A)</code></pre>
 </div>
 </div>
 </section>
+<section id="seleção-final-gráfico-de-previsão-teste" class="slide level2">
+<h2>Seleção final: Gráfico de Previsão Teste</h2>
+
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-10-1.png" width="960" class="r-stretch"></section>
 <section id="modelo-final-sarima111211_12" class="slide level2">
 <h2>Modelo final: SARIMA(1,1,1)(2,1,1)<span class="math inline">\(_{12}\)</span></h2>
 <!-- $$ -->
@@ -515,7 +517,7 @@ ana ETS(A,N,A)</code></pre>
 <section id="diagnóstico-dos-resíduos-ets" class="slide level2">
 <h2>Diagnóstico dos resíduos (ETS)</h2>
 
-<img data-src="slides_files/figure-revealjs/unnamed-chunk-11-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides_files/figure-revealjs/unnamed-chunk-12-1.png" width="960" class="r-stretch"></section>
 <section id="teste-de-ljung-box-e-shapiro-wilk-sarima" class="slide level2">
 <h2>Teste de Ljung-Box e Shapiro-Wilk (SARIMA)</h2>
 <div class="cell">
