@@ -385,3 +385,9 @@ ajuste_final |> augment() |>
 melhor_modelo_ets <- ajuste_final |> select(mnm)
 
 shapiro.test((melhor_modelo_ets |> augment())$.innov)
+
+dados |> autoplot(box_cox(n, dados |> 
+                            features(n, features = guerrero)))
+
+dados |> autoplot(difference(difference(box_cox(n, dados |> 
+                                                  features(n, features = guerrero)), 1), 12))
